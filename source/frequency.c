@@ -12,6 +12,7 @@ double get_f1(double _Complex* signal, size_t N, double order, double fft_estima
     margs->window = (double _Complex*)malloc(N*sizeof(double _Complex));
     margs->signal = signal;
     hann_harm_window(margs->window, N, order);
+    strip_DC(signal, N);
 
     double (*merit_function)(double,const merit_args*) = minus_magnitude_fourier_integral;
 
@@ -23,6 +24,31 @@ double get_f1(double _Complex* signal, size_t N, double order, double fft_estima
     free(margs->window);
     free(margs);
     return naff_estimate;
+}
+
+void pyget_f1(double _Complex* signal, size_t N, double order, double *tune)
+{
+    merit_args *margs = (merit_args*)malloc(sizeof(merit_args));
+    margs->N = N;
+    margs->window = (double _Complex*)malloc(N*sizeof(double _Complex));
+    margs->signal = signal;
+    hann_harm_window(margs->window, N, order);
+    //strip_DC(signal, N);
+
+    double (*merit_function)(double,const merit_args*) = minus_magnitude_fourier_integral;
+
+    double step = 1./N;
+    double fft_estimate = max_fft_frequency(margs->signal, N);
+    double naff_estimate = brent_minimize( merit_function, fft_estimate-step, fft_estimate+step, margs); 
+    
+    printf("%.10lf\n",naff_estimate);
+//    printf("%lf \n", fft_estimate);
+//    printf("%.10lf \n", naff_estimate);
+    free(margs->window);
+    free(margs);
+    //return naff_estimate;
+    *tune = naff_estimate;
+    return;
 }
 
 void hi()

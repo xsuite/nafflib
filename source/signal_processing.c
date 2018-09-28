@@ -9,4 +9,13 @@ double _Complex inner_product(const double _Complex* signal, double amplitude, d
     return amplitude*result/N;
 }
 
-
+void strip_DC(double _Complex* signal, size_t N)
+{
+    double _Complex mean = 0.;
+    for(int i = N; i--;)
+        mean += signal[i];
+    mean /= N;
+    for(int i = N; i--;)
+        signal[i] -= mean;
+    return;
+}

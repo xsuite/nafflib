@@ -14,9 +14,9 @@ cflags = -O2 -std=c99 -Wall -fPIC -I$(incdir)
 #cflags = -O2 -std=c99 -Wall -fPIC -I$(incdir)
 ldflags = -lm
 
-all: nafflib.so
+all: NAFFlib.so
 
-nafflib.so: $(objects)
+NAFFlib.so: $(objects)
 	@#$(cc) $(cflags) $^ -o $@  
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@  
 
