@@ -20,5 +20,7 @@ typedef struct merit_args merit_args;
 
 double minus_magnitude_fourier_integral(double frequency, const merit_args* S);
 double get_f1(double _Complex* signal, size_t N, double order, double fft_estimate);
+void py_f1(double _Complex* signal, size_t N, double order, double fft_estimate, double* tune);
+void pyget_f1(double _Complex* signal, size_t N, double order, double *tune);
 void get_tune(double _Complex* signal, size_t N, double order, double *tune);
 #endif

@@ -12,13 +12,13 @@ cc = gcc
 #cflags = -I$(incdir)
 cflags = -O2 -std=c99 -Wall -fPIC -I$(incdir)
 #cflags = -O2 -std=c99 -Wall -fPIC -I$(incdir)
-ldflags = -lm
+ldflags = -lfftw3 -lm
 
 all: NAFFlib.so
 
 NAFFlib.so: $(objects)
 	@#$(cc) $(cflags) $^ -o $@  
-	@$(cc) --shared -fPIC $(cflags) $^ -o $@  
+	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
 
 #$(objdir)/toy1.o: $(srcdir)/toy1.c $(incdir)/toy1.h 
 #	@$(cc) -c $(cflags) $< -o $@ 
