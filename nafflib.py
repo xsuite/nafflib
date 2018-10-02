@@ -4,6 +4,7 @@ libpath = os.path.join(modulepath, 'NAFFlib.so')
 NAFFlib = ctypes.CDLL(libpath)
 
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 
 class NAFFlib_struct(ctypes.Structure):
@@ -31,10 +32,21 @@ def complex_c_pointer(nparray):
 def get_tune(x):
     signal = complex_c_pointer(x)
     N = ctypes.c_int(len(x))
-    hanning_order = ctypes.c_double(3.)
+    hanning_order = ctypes.c_double(2.)
     tune = ctypes.c_double(0.)
     NAFFlib.pyget_f1(signal,N,hanning_order,ctypes.byref(tune))
-    print tune
+    #print tune
+    return tune.value
+
+def get_tune2(x):
+    signal = complex_c_pointer(x)
+    N = ctypes.c_int(len(x))
+    hanning_order = ctypes.c_double(3.)
+    tune = ctypes.c_double(0.)
+    fft_estimate = 1.*np.argmax(np.fft.fft(x)[:len(x)/2])/len(x)
+    #print fft_estimate
+    NAFFlib.py_f1(signal,N,hanning_order,ctypes.c_double(fft_estimate), ctypes.byref(tune))
+    #print tune
     return tune.value
 
 
@@ -63,10 +75,16 @@ def get_tune(x):
 #plt.plot(A)
 ##plt.show()
 
-q=0.12345
-i = np.linspace(0,10000,10000)
-x = np.cos(2.*np.pi*q*i,dtype=np.float64)
-print '%.10f'%x[5]
-print '%.7f'%get_tune(x)
-print q,1-q
-NAFFlib.hi();
+#q=0.1234567891
+#i = np.linspace(0,30000,30001)
+#x = np.cos(2.*np.pi*q*i,dtype=np.float64)
+##x = np.cos(2.*np.pi*q*i,dtype=np.complex128)
+##print('{0:.10f}'.format(x[5]) )
+##print(np.pi)
+#print '%.10f'%get_tune(x)
+#print '%.10f'%get_tune2(x)
+##print q,1-q
+##NAFFlib.hi();
+##
+##asd = ctypes.c_double(1.234567890123456)
+##print asd.value
