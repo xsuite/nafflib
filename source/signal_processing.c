@@ -66,15 +66,6 @@ double _Complex frequency_project(double f0, double _Complex *amps, double *freq
 
 void subtract_frequency(double _Complex* signal, double new_frequency, double _Complex** normal_amps, double* frequencies, double _Complex* amplitudes, size_t i, double _Complex* window, size_t N)
 {
-    //double _Complex** normal_amps;
-    //double* frequencies;
-    //double _Complex* amplitudes;
-    //size_t n_freqs;
-
-    //double new_freq;
-
-    //i = 3;
-
     for(int k = 0; k < i + 1; k++)
         normal_amps[i][k] = 0.;
     for(int j = 0; j < i; j++)

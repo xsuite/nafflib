@@ -21,9 +21,9 @@ print('                  True     frequency is Q_true = {0:.10f}'.format(q_true*
 x  =   1*np.cos(2*np.pi*q_true*i)              \
     +  0.5*np.cos(2*np.pi*1.1*q_true*i)        \
     +  0.3j*np.cos(2*np.pi*1.1**2*q_true*i)    \
-    +  0j + np.random.normal(0,noise_rms,N)    \
-    +  1j*np.random.normal(0,noise_rms,N)      \
     +  np.exp(1j*2*np.pi*0.44323*i)              
+#    +  0j + np.random.normal(0,noise_rms,N)    \
+#    +  1j*np.random.normal(0,noise_rms,N)      
 NAFF.get_tunes(x,5)
 #print('(real           ) Estimated frequency is Q_hat = {0:.10f}'.format(NAFF.get_tune(x)))
 
