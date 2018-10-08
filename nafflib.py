@@ -49,6 +49,22 @@ def get_tune2(x):
     #print tune
     return tune.value
 
+def get_tunes(x, n):
+    signal = complex_c_pointer(x)
+    N = ctypes.c_int(len(x))
+    hann_order = ctypes.c_double(3.)
+    tunes = np.empty(n,dtype=np.float64)
+    t_amps = np.empty(n,dtype=np.float64)
+    t_namps = np.empty(n,dtype=np.float64)
+    amps = complex_c_pointer(t_amps) 
+    namps = complex_c_pointer(t_namps) 
+    nfreqs = ctypes.c_int(n)
+    NAFFlib.get_f_neg(signal, N, hann_order, ctypes.c_void_p(tunes.ctypes.data), amps, namps, nfreqs)
+    #for i in range(n):
+    #    print tunes[i], abs(amps[i].to_complex()-namps[i].to_complex()), amps[i].to_complex(), namps[i].to_complex()
+    pos_amps = np.array([amps[i].to_complex() for i in range(len(amps))])
+    neg_amps = np.array([namps[i].to_complex() for i in range(len(namps))])
+    return tunes, pos_amps, neg_amps 
 
 #a = ctypes.c_int(3)
 #data = NAFFlib_struct(5,3,"h")
