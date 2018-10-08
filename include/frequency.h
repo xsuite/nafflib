@@ -8,18 +8,18 @@
 #include "brent.h"
 #include "windows.h"
 
-#define MAX_FREQS 1000
-
+//#define MAX_FREQS 1000
+//
 struct merit_args
 {
     size_t N;
     double _Complex* window;
     double _Complex* signal;
     
-    double _Complex amplitude[MAX_FREQS];
-    double  frequency[MAX_FREQS];
-    int frequency_counter;
-
+//    double _Complex amplitude[MAX_FREQS];
+//    double  frequency[MAX_FREQS];
+//    int frequency_counter;
+//
 };
 
 typedef struct merit_args merit_args;

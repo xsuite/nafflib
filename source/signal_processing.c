@@ -44,26 +44,6 @@ double _Complex frequency_project(double f0, double _Complex *amps, double *freq
     return (num/den);
 }
 
-//double _Complex frequency_project(double freq_i, double _Complex amp_j, double freq_j, double _Complex *window, size_t N)
-//{
-//    double _Complex num = 0.;
-//    double _Complex den = 0.;
-//
-//    double omega0 = (2*pi)*freq_i;
-//    double omega1 = (2*pi)*freq_j;
-//
-//    for(size_t i = N; i--;)
-//    {
-//        double _Complex Ai = amp_j*cexp(I*omega_j)
-//        double _Complex cAi = creal(Ai) - I*cimag(Ai);
-//
-//        num += (cexp(I*omega0*i) * cAi) * window[i]; 
-//        den += (Ai * cAi) * window[i]; 
-//    }
-//
-//    return (num/den)/N;
-//}
-
 void subtract_frequency(double _Complex* signal, double new_frequency, double _Complex** normal_amps, double* frequencies, double _Complex* amplitudes, size_t i, double _Complex* window, size_t N)
 {
     for(int k = 0; k < i + 1; k++)
@@ -98,27 +78,6 @@ void remove_component( double _Complex* signal, double _Complex* amps, double* f
     }
     return;
 }
-
-//void subtract_frequency(double _Complex* signal, double frequency, const double _Complex* window, double **normal_frequencies, double _Complex** normal_amplitudes, size_t i, size_t N)
-//{
-//
-//    normal_frequencies[i][i] = frequency;
-//    normal_amplitudes[i][i] = 1;
-//    for(size_t j = 0; j < i; j++)
-//    {
-//        double _Complex projection_amp = frequency_project(frequency, normal_amplitudes[i], normal_frequencies[i], i, window, N);
-//        normal_frequencies[i][j] = normal_frequencies[i-1][j];
-//        normal_amplitudes[i][j] = projection_amp;
-//    }
-//
-//    double _Complex signal_projection = signal_project(signal, normal_amplitudes[i], normal_frequencies[i], i, window, N);
-//    for(size_t j = 0; j < i; j++)
-//        normal_amplitudes[i][j] *= signal_projection;
-//
-//    for(size_t k = N; k--;)
-//        signal[k] -= 
-//
-//}
 
 double _Complex signal_project(double _Complex* signal, double _Complex* amps, double* freqs, size_t n_frequencies, double _Complex* window, size_t N)
 {
