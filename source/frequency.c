@@ -26,6 +26,38 @@ double get_f1(double _Complex* signal, size_t N, double order, double fft_estima
     return naff_estimate;
 }
 
+size_t interpolating_size(size_t N)
+{
+    while(N%6 != 1)
+        N--;
+    return N;
+}
+
+void use_interpolating_integral(size_t N, double _Complex* window)
+{
+    //Modify window (weighting function) to correspond to a 7-point newton cotes interpolation when summing
+    //size_t K = (*N/6)*6;
+    //*N = K;
+    double h = 1./N;
+    double c1 = (41./140.)*h;
+    double c2 = (82./140.)*h;
+    double c3 = (216./140.)*h;
+    double c4 = (27./140.)*h;
+    double c5 = (272./140.)*h;
+
+    window[0] *= c1;
+    for(size_t i = 0; i < N-1; i+=6)
+    {
+        window[i+1] *= c3;
+        window[i+2] *= c4;
+        window[i+3] *= c5;
+        window[i+4] *= c4;
+        window[i+5] *= c3;
+        window[i+6] *= c2;
+    }
+    window[N-1] *= 0.5;
+    return;
+}
 
 void get_f_neg(double _Complex* signal, size_t N, double order, double* frequencies, double _Complex* amplitudes, double _Complex* negative_amplitudes, size_t n_freqs)
 {
@@ -82,10 +114,11 @@ void get_f(double _Complex* signal, size_t N, double order, double* frequencies,
     margs->signal = signal;
     hann_harm_window(margs->window, N, order);
     strip_DC(signal, N);
+    //use_interpolating_integral(&margs->N, margs->window);
 
     double (*merit_function)(double,const merit_args*) = minus_magnitude_fourier_integral;
 
-    double step = 1./N;
+    double step = 1./margs->N;
 
     double _Complex* normal_amplitudes[n_freqs];
     for(int i = 0; i < n_freqs; i++)
@@ -135,12 +168,15 @@ void py_f1(double _Complex* signal, size_t N, double order, double fft_estimate,
 
 void pyget_f1(double _Complex* signal, size_t N, double order, double *tune)
 {
+    //N = interpolating_size(N);
+    printf("%d\n",(int)N);
     merit_args *margs = (merit_args*)malloc(sizeof(merit_args));
     margs->N = N;
     margs->window = (double _Complex*)malloc(N*sizeof(double _Complex));
     margs->signal = signal;
     hann_harm_window(margs->window, N, order);
     strip_DC(signal, N);
+    //use_interpolating_integral(margs->N, margs->window);
 
     double (*merit_function)(double,const merit_args*) = minus_magnitude_fourier_integral;
 
