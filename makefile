@@ -2,21 +2,25 @@ objdir = object
 srcdir = source
 incdir = include
 
-#headers = $(wildcard $(incdir)/*.h)
-#objects = $(subst $(incdir), $(objdir), $(headers:.h=.o))
-objects = $(objdir)/windows.o $(objdir)/signal_processing.o $(objdir)/brent.o $(objdir)/frequency.o $(objdir)/fft.o 
+python3inc = /usr/include/python3.6
+python2inc = /usr/include/python2.7
 
+objects = $(objdir)/windows.o $(objdir)/signal_processing.o $(objdir)/brent.o $(objdir)/frequency.o $(objdir)/fft.o  
 
 cc = gcc
 #cflags = --shared -fPIC -O2 -std=c99 -Wall -I$(INCDIR)
 #cflags = -I$(incdir)
-cflags = -O2 -std=c99 -Wall -fPIC -I$(incdir)
+cflags = -O3 -std=c99 -Wall -fPIC -I$(incdir)  #-I/usr/include/python2.7
 #cflags = -O2 -std=c99 -Wall -fPIC -I$(incdir)
-ldflags = -lfftw3 -lm
+ldflags = -lfftw3 -lm #-lpython
 
-all: NAFFlib.so
+all: NAFFlib.so NAFFlib2.so
 
-NAFFlib.so: $(objects)
+NAFFlib.so: $(objects) $(objdir)/pynafflib3.o
+	@#$(cc) $(cflags) $^ -o $@  
+	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
+
+NAFFlib2.so: $(objects) $(objdir)/pynafflib2.o
 	@#$(cc) $(cflags) $^ -o $@  
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
 
@@ -37,6 +41,12 @@ $(objdir)/frequency.o: $(srcdir)/frequency.c $(incdir)/frequency.h
 
 $(objdir)/fft.o: $(srcdir)/fft.c $(incdir)/fft.h 
 	@$(cc) -c $(cflags) $< -o $@ 
+
+$(objdir)/pynafflib3.o: $(srcdir)/pynafflib.c $(incdir)/pynafflib.h 
+	@$(cc) -c $(cflags) -I$(python3inc) $< -o $@ 
+
+$(objdir)/pynafflib2.o: $(srcdir)/pynafflib.c $(incdir)/pynafflib.h 
+	@$(cc) -c $(cflags) -I$(python2inc) $< -o $@ 
 
 clean:
 	rm $(objdir)/*

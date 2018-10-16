@@ -113,5 +113,3 @@ double brent_minimize(double (*f)(double,const merit_args*), double min, double 
     printf("WARNING: nafflib Brent minimization reached maximum number of iterations: %d.\n",max_iter);
     return x;
 }
-
-
