@@ -10,7 +10,6 @@
 
 #define pi 3.141592653589793238462643383279
 
-void test_func(double _Complex *arr, int n);
 
 double cheb_poly(int n, double x);
 void cheb_window(double _Complex window[], const size_t N, const double a);

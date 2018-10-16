@@ -34,6 +34,31 @@ void fft2(double _Complex* X, size_t N)
     }
 }
 
+double max_fftw_frequency_all(double _Complex* signal, size_t N)
+{
+    fftw_complex *out = (fftw_complex*) fftw_malloc(N*sizeof(fftw_complex));
+    fftw_plan p = fftw_plan_dft_1d(N, signal, out, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_execute(p);
+
+    int imax = 0;
+    double max = 0;
+
+    for(size_t i = N; i--;)
+    {
+        if( cabs(out[i]) > max )
+        {
+            max = cabs(out[i]);
+            imax = (int)i;
+        } 
+    }
+    if( imax > N/2)
+        imax = imax - N;
+
+    fftw_destroy_plan(p);
+    fftw_free(out);
+    return (1.0*imax)/N;
+}
+
 double max_fftw_frequency(double _Complex* signal, size_t N)
 {
     fftw_complex *out = (fftw_complex*) fftw_malloc(N*sizeof(fftw_complex));

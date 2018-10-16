@@ -44,28 +44,28 @@ double _Complex frequency_project(double f0, double _Complex *amps, double *freq
     return (num/den);
 }
 
-void subtract_frequency(double _Complex* signal, double new_frequency, double _Complex** normal_amps, double* frequencies, double _Complex* amplitudes, size_t i, double _Complex* window, size_t N)
+void subtract_frequency(double _Complex* signal, double _Complex** normal_amps, double* frequencies, double _Complex* amplitudes, size_t i, double _Complex* window, size_t N)
 {
-    for(int k = 0; k < i + 1; k++)
+    for(size_t k = 0; k < i + 1; k++)
         normal_amps[i][k] = 0.;
-    for(int j = 0; j < i; j++)
+    for(size_t j = 0; j < i; j++)
     {
         double Aij = frequency_project(frequencies[i], normal_amps[j], frequencies, j+1, window, N);
-        for(int k = 0; k < j + 1; k++)
+        for(size_t k = 0; k < j + 1; k++)
             normal_amps[i][k] -= Aij*normal_amps[j][k];
     }
     normal_amps[i][i]=1;
     double _Complex frequency_amplitude = signal_project(signal, normal_amps[i], frequencies, i+1, window, N);
-    for(int k = 0; k < i+1; k++)
+    for(size_t k = 0; k < i+1; k++)
         normal_amps[i][k] *= frequency_amplitude;
 
-    remove_component(signal, normal_amps[i], frequencies, i+1, window, N); 
+    remove_component(signal, normal_amps[i], frequencies, i+1, N); 
     amplitudes[i] = frequency_amplitude;
     return;
 
 }
 
-void remove_component( double _Complex* signal, double _Complex* amps, double* frequencies, size_t n_freqs, double _Complex* window, size_t N)
+void remove_component( double _Complex* signal, double _Complex* amps, double* frequencies, size_t n_freqs, size_t N)
 {
     double omega[n_freqs];
     for(size_t j = n_freqs; j--;)

@@ -1,16 +1,5 @@
 #include "windows.h"
 
-void test_func(double _Complex* arr, int n)
-{
-//    double _Complex a = (1.0 + 1.0*I)*(1.0 - 1.0*I);
-    for(int i = 0; i < n; i++)
-    {
-        arr[i] *= arr[i];
-        printf("%lf +i %lf\n",creal(arr[i]), cimag(arr[i]));
-    }
-    return;
-}
-
 double cheb_poly(int n, double x)
 {
     double res;
