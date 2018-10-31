@@ -151,25 +151,25 @@ static PyMethodDef NAFFlibMethods[] =
 
 #if PY_MAJOR_VERSION >= 3
 
-static struct PyModuleDef cModPyNAFFlib = 
+static struct PyModuleDef cModPyNAFFlib_c = 
 {
     PyModuleDef_HEAD_INIT,
-    "NAFFlib","The NAFF algorithm written in a python-wrapped C library.",
+    "NAFFlib_c","The NAFF algorithm written in a python-wrapped C library.",
     -1,
     NAFFlibMethods
 };
 
-PyMODINIT_FUNC PyInit_NAFFlib(void)
+PyMODINIT_FUNC PyInit_NAFFlib_c(void)
 {
     import_array();
-    return PyModule_Create(&cModPyNAFFlib);
+    return PyModule_Create(&cModPyNAFFlib_c);
 }
 
 #else
 
-PyMODINIT_FUNC initNAFFlib2(void)
+PyMODINIT_FUNC initNAFFlib2_c(void)
 {
-    (void) Py_InitModule("NAFFlib2", NAFFlibMethods);
+    (void) Py_InitModule("NAFFlib2_c", NAFFlibMethods);
     import_array();
 }
 

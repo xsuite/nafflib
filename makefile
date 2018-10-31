@@ -14,13 +14,13 @@ cflags = -O3 -std=c99 -Wall -fPIC -I$(incdir)  #-I/usr/include/python2.7
 #cflags = -O2 -std=c99 -Wall -fPIC -I$(incdir)
 ldflags = -lfftw3 -lm #-lpython
 
-all: NAFFlib.so NAFFlib2.so
+all: NAFFlib_c.so NAFFlib2_c.so
 
-NAFFlib.so: $(objects) $(objdir)/pynafflib3.o
+NAFFlib_c.so: $(objects) $(objdir)/pynafflib3.o
 	@#$(cc) $(cflags) $^ -o $@  
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
 
-NAFFlib2.so: $(objects) $(objdir)/pynafflib2.o
+NAFFlib2_c.so: $(objects) $(objdir)/pynafflib2.o
 	@#$(cc) $(cflags) $^ -o $@  
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
 
