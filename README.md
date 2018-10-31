@@ -7,17 +7,11 @@ Includes a Python wrapper.
 ```
 $ make
 ```
-to compile NAFFlib.so (python3) and NAFFlib2.so shared objects.
+to compile NAFFlib_c.so (python3) and NAFFlib2_c.so shared objects.
 
 ***
-NAFFlib module can be imported:
+The NAFFlib module can be imported by:
 
--  in Python2:
-```
-import NAFFlib2 as NAFFlib
-```
-
-- or in Python3:
 ```
 import NAFFlib
 ```
