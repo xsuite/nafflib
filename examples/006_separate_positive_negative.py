@@ -1,11 +1,7 @@
 from __future__ import print_function
 import sys
 sys.path.append('..')
-sys.path.append('.')
-if sys.version_info[0] < 3:
-    import NAFFlib2 as NAFF #python2
-else:
-    import NAFFlib as NAFF #python3
+import NAFFlib as NAFF
 
 import numpy as np
 np.random.seed(123456)
