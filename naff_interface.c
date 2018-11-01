@@ -2,9 +2,14 @@
 #include <stdio.h>
 #include <complex.h>
 
+// originally was
 // C++ <-> Fortran interface for NAFF
 // K. Sjobak and S. Kostoglou (CERN)
 // August 2017
+// which was then modified to the
+// C <-> Fortran interface for the new NAFFlib
+// K. Paraschou (AUTH & CERN)
+// November 2018
 
 //extern "C" double tunenaff(double* x,  double* xp, int maxn, int plane_idx, int norm_flag, double fft_naff) {
 double tunenaff(double* x,  double* xp, int maxn, int plane_idx, int norm_flag, double fft_naff) {

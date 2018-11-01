@@ -26,30 +26,6 @@ double get_f1(double _Complex* signal, size_t N, double order, double fft_estima
     return naff_estimate;
 }
 
-double get_q(double _Complex* signal, size_t N, double order, int interpolate_integral)
-{
-    if(interpolate_integral)
-        N = interpolating_size(N);
-    merit_args *margs = (merit_args*)malloc(sizeof(merit_args));
-    margs->N = N;
-    margs->window = (double _Complex*)malloc(margs->N*sizeof(double _Complex));
-    margs->signal = signal;
-    hann_harm_window(margs->window, margs->N, order);
-    strip_DC(margs->signal, margs->N);
-    if(interpolate_integral)
-        use_interpolating_integral(margs->N, margs->window);
-
-    double (*merit_function)(double,const merit_args*) = minus_magnitude_fourier_integral;
-
-    double step = 1./margs->N;
-    double fft_estimate = max_fftw_frequency(margs->signal, margs->N);
-    double naff_estimate = brent_minimize( merit_function, fft_estimate-step, fft_estimate+step, margs); 
-    
-    free(margs->window);
-    free(margs);
-    return naff_estimate;
-}
-
 size_t interpolating_size(size_t N)
 {
     while(N%6 != 1)
@@ -105,49 +81,30 @@ void use_interpolating_integral(size_t N, double _Complex* window)
     return;
 }
 
-void get_f(double _Complex* signal, size_t N, double order, double* frequencies, double _Complex* amplitudes, double _Complex* negative_amplitudes, size_t n_freqs)
+#ifndef COMPILE_WITHOUT_FFTW
+
+double get_q(double _Complex* signal, size_t N, double order, int interpolate_integral)
 {
+    if(interpolate_integral)
+        N = interpolating_size(N);
     merit_args *margs = (merit_args*)malloc(sizeof(merit_args));
     margs->N = N;
-    margs->window = (double _Complex*)malloc(N*sizeof(double _Complex));
+    margs->window = (double _Complex*)malloc(margs->N*sizeof(double _Complex));
     margs->signal = signal;
-    hann_harm_window(margs->window, N, order);
-    strip_DC(signal, N);
+    hann_harm_window(margs->window, margs->N, order);
+    strip_DC(margs->signal, margs->N);
+    if(interpolate_integral)
+        use_interpolating_integral(margs->N, margs->window);
 
     double (*merit_function)(double,const merit_args*) = minus_magnitude_fourier_integral;
 
-    double step = 1./N;
-
-    double _Complex* normal_amplitudes[n_freqs];
-    double _Complex* normal_amplitudes_neg[n_freqs];
-    double frequencies_neg[n_freqs];
-    for(size_t i = 0; i < n_freqs; i++)
-    {
-        normal_amplitudes[i] = (double _Complex*)malloc((i+1)*sizeof(double _Complex));
-        normal_amplitudes_neg[i] = (double _Complex*)malloc((i+1)*sizeof(double _Complex));
-    }
-    //double frequencies[n_freqs];
-    //double amplitudes[n_freqs];
-    for(size_t i = 0; i < n_freqs; i++)
-    {
-        double fft_estimate = max_fftw_frequency(margs->signal, N);
-        double naff_estimate = brent_minimize( merit_function, fft_estimate-step, fft_estimate+step, margs); 
-        //double neg_naff_estimate = brent_minimize( merit_function, -naff_estimate-step, -naff_estimate+step, margs); 
-        frequencies[i] = naff_estimate;
-        frequencies_neg[i] = -naff_estimate;
-        subtract_frequency(margs->signal, normal_amplitudes, frequencies, amplitudes, i, margs->window, N);
-        subtract_frequency(margs->signal, normal_amplitudes_neg, frequencies_neg, negative_amplitudes, i, margs->window, N);
-
-    }
+    double step = 1./margs->N;
+    double fft_estimate = max_fftw_frequency(margs->signal, margs->N);
+    double naff_estimate = brent_minimize( merit_function, fft_estimate-step, fft_estimate+step, margs); 
     
     free(margs->window);
     free(margs);
-    for(size_t i = 0; i < n_freqs; i++)
-    {
-       free(normal_amplitudes[i]); 
-       free(normal_amplitudes_neg[i]); 
-    }
-    return;
+    return naff_estimate;
 }
 
 void get_f_all(double _Complex* signal, size_t N, double order, double* frequencies, double _Complex* amplitudes, size_t n_freqs)
@@ -235,49 +192,4 @@ void get_f_neg(double _Complex* signal, size_t N, double order, double* frequenc
     //return naff_estimate;
 }
 
-void py_f1(double _Complex* signal, size_t N, double order, double fft_estimate, double* tune)
-{
-    merit_args *margs = (merit_args*)malloc(sizeof(merit_args));
-    margs->N = N;
-    margs->window = (double _Complex*)malloc(N*sizeof(double _Complex));
-    margs->signal = signal;
-    hann_harm_window(margs->window, N, order);
-    strip_DC(signal, N);
-
-    double (*merit_function)(double,const merit_args*) = minus_magnitude_fourier_integral;
-
-    double step = 1./N;
-    double naff_estimate = brent_minimize( merit_function, fft_estimate-step, fft_estimate+step, margs); 
-    
-//    printf("%lf \n", fft_estimate);
-//    printf("%.10lf \n", naff_estimate);
-    free(margs->window);
-    free(margs);
-    *tune = naff_estimate;
-    return;
-}
-
-void pyget_f1(double _Complex* signal, size_t N, double order, double *tune)
-{
-    //N = interpolating_size(N);
-    printf("%d\n",(int)N);
-    merit_args *margs = (merit_args*)malloc(sizeof(merit_args));
-    margs->N = N;
-    margs->window = (double _Complex*)malloc(N*sizeof(double _Complex));
-    margs->signal = signal;
-    hann_harm_window(margs->window, N, order);
-    strip_DC(signal, N);
-    //use_interpolating_integral(margs->N, margs->window);
-
-    double (*merit_function)(double,const merit_args*) = minus_magnitude_fourier_integral;
-
-    double step = 1./N;
-    double fft_estimate = max_fftw_frequency(margs->signal, N);
-    double naff_estimate = brent_minimize( merit_function, fft_estimate-step, fft_estimate+step, margs); 
-    
-    free(margs->window);
-    free(margs);
-    //return naff_estimate;
-    *tune = naff_estimate;
-    return;
-}
+#endif

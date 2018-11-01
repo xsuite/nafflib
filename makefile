@@ -9,9 +9,9 @@ objects = $(objdir)/windows.o $(objdir)/signal_processing.o $(objdir)/brent.o $(
 
 cc = gcc
 #cflags = --shared -fPIC -O2 -std=c99 -Wall -I$(INCDIR)
-#cflags = -I$(incdir)
+#cflags = -DCOMPILE_WITHOUT_FFTW -O3 -std=c99 -Wall -fPIC -I$(incdir)  #-I/usr/include/python2.7
 cflags = -O3 -std=c99 -Wall -fPIC -I$(incdir)  #-I/usr/include/python2.7
-#cflags = -O2 -std=c99 -Wall -fPIC -I$(incdir)
+#ldflags = -lm #-lpython
 ldflags = -lfftw3 -lm #-lpython
 
 all: NAFFlib_c.so NAFFlib2_c.so
@@ -50,3 +50,5 @@ $(objdir)/pynafflib2.o: $(srcdir)/pynafflib.c $(incdir)/pynafflib.h
 
 clean:
 	rm $(objdir)/*
+	rm NAFFlib_c.so
+	rm NAFFlib2_c.so
