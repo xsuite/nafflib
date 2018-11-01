@@ -1,5 +1,7 @@
 #include "pynafflib.h"
 
+#ifndef COMPILE_WITHOUT_FFTW
+
 static PyObject* get_tune(PyObject* self, PyObject* args)
 {
     double order = 2; // default value
@@ -172,5 +174,8 @@ PyMODINIT_FUNC initNAFFlib2_c(void)
     (void) Py_InitModule("NAFFlib2_c", NAFFlibMethods);
     import_array();
 }
+
+
+#endif
 
 #endif
