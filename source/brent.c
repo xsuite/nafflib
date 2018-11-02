@@ -45,7 +45,7 @@ double brent_minimize(double (*f)(double,const merit_args*), double min, double 
             double td = delta2;
             delta2 = delta;
             // determine whether a parabolic step is acceptible or not:
-            if((fabs(p) >= fabs(q * td / 2)) || (p <= q * (min - x)) || (p >= q * (max - x)))
+            if((fabs(p) >= fabs(q * (td / 2))) || (p <= q * (min - x)) || (p >= q * (max - x)))
             {
                 // nope, try golden section instead
                 delta2 = (x >= mid) ? min - x : max - x;

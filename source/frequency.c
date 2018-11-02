@@ -35,7 +35,7 @@ size_t interpolating_size(size_t N)
 
 void use_interpolating_integral_hardy(size_t N, double _Complex* window)
 {
-    //Modify window (weighting function) to correspond to a 7-point newton cotes interpolation when summing
+    //Modify window (weighting function) to correspond to a 7-point newton cotes-like interpolation when summing
     double h = 1./N;
     double c1 = (28./100.)*h;
     double c2 = (56./100.)*h;

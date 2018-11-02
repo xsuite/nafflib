@@ -28,7 +28,7 @@ void cheb_window(double _Complex window[], const size_t N, const double a){
         double sum = 0;
 
         for( size_t i = 1; i <= M; i++ )
-            sum += cheb_poly(N-1, x0*cos(pi*i/N))*cos(2.0*n*pi*i/N);
+            sum += cheb_poly(N-1, x0*cos((pi*i)/N))*cos((2.0*n)*((pi*i)/N));
 
         window[nn] = tg + 2*sum;
         window[N-nn-1] = window[nn];
@@ -40,7 +40,6 @@ void cheb_window(double _Complex window[], const size_t N, const double a){
         window[nn] = window[nn]/max;
 
     return;
-
 }
 
 void hann_harm_window(double _Complex window[], const size_t N, const double n)
@@ -58,7 +57,7 @@ void hann_harm_window(double _Complex window[], const size_t N, const double n)
     for( size_t j = 1; j <= 2*n; j++ )
         factorial_2 *= j;
 
-    double cn = pow(2., n)*(1.*factorial_1*factorial_1)/(1.*factorial_2);
+    double cn = pow(2., n)*(((1.*factorial_1)*factorial_1)/(1.*factorial_2));
     
     for( size_t i = 0; i < N; i++)
         window[i] = cn*pow(1. + cos( (i-TM)*PIST ) ,n);
@@ -84,13 +83,13 @@ double calculateFm(size_t m, double sp2, double a, size_t nBar)
         n[i] = i + 1;
         p[i] = i+1;
 //        Fm[i] = 0;
-        Num[i] = 1 -  m*m/sp2/( a * a + (n[i] - 0.5) * (n[i] - 0.5) );
+        Num[i] = 1 -  ((m*m)/sp2)/( a * a + (n[i] - 0.5) * (n[i] - 0.5) );
         prodNum *= Num[i];
-        Den[i] = 1. -  m*m/(1.*p[i]*p[i]);
+        Den[i] = 1. -  (m*m)/((1.*p[i])*p[i]);
         if( (i+1) != m )
             prodDen *= Den[i];
     }
-    double prodFm = pow(-1,(m+1))*prodNum/(2*prodDen);
+    double prodFm = pow(-1,(m+1))*(prodNum/(2*prodDen));
     return prodFm;
 }
 
@@ -98,7 +97,7 @@ double calculateFm(size_t m, double sp2, double a, size_t nBar)
 void taylorWindow( double _Complex w[], const size_t N, const double NBAR, const double SLL)
 {
     double A = acosh( pow(10,SLL) )/pi;
-    double SP2 = NBAR*NBAR/(A*A + (NBAR-0.5)*(NBAR-0.5));
+    double SP2 = NBAR*(NBAR/(A*A + (NBAR-0.5)*(NBAR-0.5)));
     double Fm[(int)NBAR], Xi[N];
     if( NBAR < (2 * pow(A,2) + 0.5) ) {
         printf("Warning (taylorWindow): SSL value does nto satisfy NBAR >= 2*A^2+0.5\n");
@@ -121,7 +120,7 @@ void taylorWindow( double _Complex w[], const size_t N, const double NBAR, const
     {
         double sum = 0.;
         for( size_t j = 1; j < NBAR; j++ )
-            sum += Fm[j-1] * cos( 2*pi*j*Xi[i] );
+            sum += Fm[j-1] * cos( ((2*pi)*j)*Xi[i] );
         w[i] += 2*sum;
     }
     return;

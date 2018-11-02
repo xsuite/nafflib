@@ -18,7 +18,7 @@ void fft2(double _Complex* X, size_t N)
 {
     if( N>=2 )
     {
-        double _Complex omega = -I*2*pi/N;
+        double _Complex omega = -I*((2*pi)/N);
         size_t N2 = N/2;
         separate(X,N);
         fft2(X, N/2);
