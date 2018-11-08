@@ -10,9 +10,8 @@ numpy2inc = `python2 -c "import numpy; print(numpy.get_include())"`
 objects = $(objdir)/windows.o $(objdir)/signal_processing.o $(objdir)/brent.o $(objdir)/frequency.o $(objdir)/fft.o  
 
 cc = gcc
-#cflags = --shared -fPIC -O2 -std=c99 -Wall -I$(INCDIR)
 #cflags = -DCOMPILE_WITHOUT_FFTW -O3 -std=c99 -Wall -fPIC -I$(incdir)  #-I/usr/include/python2.7
-cflags = -O3 -std=c99 -Wall -fPIC -I$(incdir)  #-I/usr/include/python2.7
+cflags = -O3 -std=c99 -Wall -fPIC -I$(incdir) 
 #ldflags = -lm #-lpython
 ldflags = -lfftw3 -lm #-lpython
 
@@ -21,15 +20,10 @@ py3: NAFFlib_c.so
 py2: NAFFlib2_c.so
 
 NAFFlib_c.so: $(objects) $(objdir)/pynafflib3.o
-	@#$(cc) $(cflags) $^ -o $@  
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
 
 NAFFlib2_c.so: $(objects) $(objdir)/pynafflib2.o
-	@#$(cc) $(cflags) $^ -o $@  
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
-
-#$(objdir)/toy1.o: $(srcdir)/toy1.c $(incdir)/toy1.h 
-#	@$(cc) -c $(cflags) $< -o $@ 
 
 $(objdir)/windows.o: $(srcdir)/windows.c $(incdir)/windows.h 
 	@$(cc) -c $(cflags) $< -o $@ 

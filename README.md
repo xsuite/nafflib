@@ -9,6 +9,12 @@ $ make
 ```
 to compile NAFFlib_c.so (python3) and NAFFlib2_c.so shared objects.
 
+Alternatively, python3 and python2 support can be compiled separately by:
+```
+$ make py2
+$ make py3
+```
+
 ***
 The NAFFlib module can be imported by:
 
