@@ -1,2 +1,2 @@
 
-from NAFFlib import *
+from .NAFFlib import *
