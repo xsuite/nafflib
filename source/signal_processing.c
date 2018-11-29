@@ -4,8 +4,12 @@ double _Complex inner_product(const double _Complex* signal, double amplitude, d
 {
     double omega = (2*pi)*frequency;
     double _Complex result = 0.;
+    double theta = omega*N;
     for( size_t i = N; i--; )
-        result += (signal[i]*cexp(-I*(omega*i)))*window[i];
+    {
+        theta -= omega;
+        result += (signal[i]*(cos(theta)-I*sin(theta)))*window[i];
+    }
     return (amplitude*result)/N;
 }
 
@@ -34,10 +38,12 @@ double _Complex frequency_project(double f0, double _Complex *amps, double *freq
     {
         double _Complex Ai = 0;
         for(size_t j = n_frequencies; j--;)
-            Ai += amps[j]*cexp(I*(omega[j]*i));
+         //   Ai += amps[j]*cexp(I*(omega[j]*i));
+            Ai += amps[j]*(cos(omega[j]*i)+I*sin(omega[j]*i));
         double _Complex cAi = creal(Ai) - I*cimag(Ai);
 
-        num += (cexp(I*omega0*i) * cAi) * window[i]; 
+        //num += (cexp(I*omega0*i) * cAi) * window[i]; 
+        num += ((cos(omega0*i)+I*sin(omega0*i)) * cAi) * window[i]; 
         den += (Ai * cAi) * window[i]; 
     }
 
@@ -74,7 +80,7 @@ void remove_component( double _Complex* signal, double _Complex* amps, double* f
     for(size_t i = N; i--;)
     {
         for(size_t j = n_freqs; j--;)
-            signal[i] -= amps[j]*cexp(I*(omega[j]*i)); 
+            signal[i] -= amps[j]*(cos(omega[j]*i)+I*sin(omega[j]*i)); 
     }
     return;
 }
@@ -93,7 +99,8 @@ double _Complex signal_project(double _Complex* signal, double _Complex* amps, d
     {
         double _Complex Ai = 0;
         for(size_t j = n_frequencies; j--;)
-            Ai += amps[j]*cexp(I*(omega[j]*i));
+            //Ai += amps[j]*cexp(I*(omega[j]*i));
+            Ai += amps[j]*(cos(omega[j]*i)+I*sin(omega[j]*i));
         double _Complex cAi = creal(Ai) - I*cimag(Ai);
 
         num += (signal[i] * cAi) * window[i]; 
