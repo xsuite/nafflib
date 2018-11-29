@@ -1,6 +1,6 @@
 #include "pynafflib.h"
 
-#ifndef COMPILE_WITHOUT_FFTW
+#ifndef COMPILE_WITHOUT_PYTHON
 
 static PyObject* get_tune(PyObject* self, PyObject* args)
 {
