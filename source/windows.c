@@ -57,10 +57,12 @@ void hann_harm_window(double _Complex window[], const size_t N, const double n)
     for( size_t j = 1; j <= 2*n; j++ )
         factorial_2 *= j;
 
-    double cn = pow(2., n)*(((1.*factorial_1)*factorial_1)/(1.*factorial_2));
+    //double cn = pow(2., n)*(((1.*factorial_1)*factorial_1)/(1.*factorial_2));
+    double cn = exp(n*log(2.))*(((1.*factorial_1)*factorial_1)/(1.*factorial_2));
     
     for( size_t i = 0; i < N; i++)
-        window[i] = cn*pow(1. + cos( (i-TM)*PIST ) ,n);
+        //window[i] = cn*pow(1. + cos( (i-TM)*PIST ) ,n);
+        window[i] = cn*exp(n*log(1. + cos( (i-TM)*PIST )));
     
     return;
 }

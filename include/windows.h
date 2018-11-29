@@ -10,6 +10,13 @@
 
 #define pi 3.141592653589793238462643383279
 
+#ifdef COMPILE_WITH_CRLIBM
+#include "crlibm.h"
+#define log log_rn
+#define exp exp_rn
+#endif
+
+
 
 double cheb_poly(int n, double x);
 void cheb_window(double _Complex window[], const size_t N, const double a);

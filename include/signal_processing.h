@@ -3,8 +3,15 @@
 
 #include <complex.h>
 #include <stdio.h>
+#include <math.h>
 
 #define pi 3.141592653589793238462643383279
+
+#ifdef COMPILE_WITH_CRLIBM
+#include "crlibm.h"
+#define cos cos_rn
+#define sin sin_rn
+#endif
 
 double _Complex inner_product(const double _Complex* signal, double amplitude, double frequency,const double _Complex* window, size_t N);
 void strip_DC(double _Complex* signal, size_t N);
