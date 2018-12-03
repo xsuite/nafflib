@@ -8,9 +8,9 @@ double brent_minimize(double (*f)(double,const merit_args*), double min, double 
     const double tolerance = 1.490116e-8; //ldexp(1.-25)
 
     double x, w, v, u; 
-    double delta1, delta2;  
     double fu, fv, fw, fx;
     double mid;
+    double delta1, delta2;  
     double tol0 = tolerance*0.25;
     double tol1, tol2;  // minimal relative movement in x
 
@@ -48,7 +48,7 @@ double brent_minimize(double (*f)(double,const merit_args*), double min, double 
             {   
                 delta1 = p / q;
                 u = x + delta1;
-                if( u - min < tol2 || max - u < tol2)
+                if( (u - min) < tol2 || (max - u) < tol2)
                     delta1 = (mid - x) < 0 ? -fabs(tol1) : fabs(tol1);
             }
         }
@@ -61,7 +61,7 @@ double brent_minimize(double (*f)(double,const merit_args*), double min, double 
         fu = (*f)(u,S);
         if (fu <= fx)
         {
-            if( u >= x)
+            if( u >= x )
                 min = x;
             else
                 max = x;
