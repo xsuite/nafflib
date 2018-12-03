@@ -4,3 +4,4 @@
 object
 *.swp
 *.pyc
+!makefile
