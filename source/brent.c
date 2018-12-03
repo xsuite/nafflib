@@ -59,7 +59,7 @@ double brent_minimize(double (*f)(double,const merit_args*), double min, double 
         }
         u = (fabs(delta1) >= tol1) ? x + delta1 : x + ( (delta1 > 0) ? fabs(tol1) : -fabs(tol1) );
         fu = (*f)(u,S);
-        if (fu <= fx)
+        if(fu <= fx)
         {
             if( u >= x )
                 min = x;
