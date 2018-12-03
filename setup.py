@@ -1,5 +1,7 @@
 from setuptools import setup, Extension, find_packages
 import sys
+import numpy as np
+
 if sys.version_info[0] < 3:
     extension_name = "NAFFlib/NAFFlib2_c"
 else:
@@ -16,7 +18,7 @@ module = Extension(extension_name,
                     "NAFFlib/source/signal_processing.c",
                     "NAFFlib/source/windows.c",
                    ],
-                   include_dirs=['NAFFlib/include']
+                   include_dirs=["NAFFlib/include", np.get_include()]
 )
 
 setup(
@@ -26,7 +28,7 @@ setup(
     author_email="konstantinos.paraschou@cern.ch",
     long_description=long_description,
     url="https://github.com/kparasch/NAFFlib",
-    packages=find_packages(exclude=["NAFFlib/examples"]),
-    install_requires=["numpy"],
+    packages=find_packages(),
+#    install_requires=["numpy"],
     ext_modules=[module]
 )
