@@ -28,7 +28,7 @@ setup(
     author_email="konstantinos.paraschou@cern.ch",
     description="A Python-wrapped C library which implements the NAFF algorithm",
     long_description=long_description,
-    url="https://github.com/kparasch/NAFFlib",
+    url="https://github.com/PyCOMPLETE/NAFFlib",
     packages=find_packages(),
     license = 'LGPLv2.1',
     keywords = 'frequency analysis naff',
