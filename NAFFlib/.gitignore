@@ -1,5 +1,7 @@
+*
 !*.*
 !*/
 object
 *.swp
 *.pyc
+!makefile

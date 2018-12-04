@@ -6,8 +6,8 @@ else:
 
 import numpy as np
 
-def multiparticle_tunes(x):
+def multiparticle_tunes(x, order=2, interpolation=0):
     q_i = np.empty_like(x[:,0])
     for ii in range(len(x)):
-        q_i[ii] = get_tune(x[ii])
+        q_i[ii] = get_tune(x[ii], order, interpolation)
     return q_i
