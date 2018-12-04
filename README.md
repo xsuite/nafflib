@@ -23,7 +23,7 @@ $ pip3 install NAFFlib
 ```
 for Python3 support.
 
-### Manual
+### Local Installation
 ```
 $ git clone git@github.com:PyCOMPLETE/NAFFlib.git
 $ cd NAFFlib
@@ -52,7 +52,7 @@ The NAFFlib module can be imported by:
 import NAFFlib
 ```
 
-#### Functions in NAFFlib:
+### Functions in NAFFlib:
 1. ```q = NAFFlib.get_tune(x, order, interpolation)```
 where:  
 - ```x``` is the (complex or real) input signal in the form of a one-dimensional non-empty numpy array.
