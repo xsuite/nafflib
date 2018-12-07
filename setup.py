@@ -23,7 +23,7 @@ module = Extension(extension_name,
 
 setup(
     name="NAFFlib",
-    version="1.0.0",
+    version="1.0.1",
     author="Konstantinos Paraschou",
     author_email="konstantinos.paraschou@cern.ch",
     description="A Python-wrapped C library which implements the NAFF algorithm",

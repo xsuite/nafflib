@@ -44,9 +44,14 @@ void cheb_window(double _Complex window[], const size_t N, const double a){
 
 void hann_harm_window(double _Complex window[], const size_t N, const double n)
 {
-    double T1 = 0.;
-    double T2 = N;
-    double TM = (T2-T1)/2.;
+    if( n == 0 )
+    {
+        for( size_t i = N; i--; )
+            window[i] = 1.;
+        return;
+    }
+
+    double TM = N/2.;
     double PIST = pi/TM;
 
     int factorial_1 = 1;
