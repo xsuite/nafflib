@@ -18,8 +18,9 @@ module = Extension(extension_name,
                     "NAFFlib/source/signal_processing.c",
                     "NAFFlib/source/windows.c",
                    ],
-                   include_dirs=["NAFFlib/include", np.get_include()]
-)
+                   include_dirs=["NAFFlib/include", np.get_include()],
+                   extra_compile_args=["-std=c99"]
+                  )
 
 setup(
     name="NAFFlib",
