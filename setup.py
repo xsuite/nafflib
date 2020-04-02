@@ -24,11 +24,12 @@ module = Extension(extension_name,
 
 setup(
     name="NAFFlib",
-    version="1.0.1",
+    version="1.0.2",
     author="Konstantinos Paraschou",
     author_email="konstantinos.paraschou@cern.ch",
     description="A Python-wrapped C library which implements the NAFF algorithm",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url="https://github.com/PyCOMPLETE/NAFFlib",
     packages=find_packages(),
     license = 'LGPLv2.1',
