@@ -72,7 +72,7 @@ where:
 returns three one-dimensional numpy arrays ```Q, A, B``` of size N with the first (being real-valued) containing the most dominant positive frequencies in the Fourier spectrum, the second containing the complex-valued amplitudes of the corresponding frequency and the third containing the complex-valued amplitudes of the negative of the corresponding frequency. It is recommended that this function is used with a real-valued input where the Fourier power spectrum is guaranteed to be an even function.
 
 
-3. ```Q, A = NAFFlib.get_tunes(x, N, order, interpolation)```
+3. ```Q, A = NAFFlib.get_tunes_all(x, N, order, interpolation)```
 where:  
 - ```x``` is the (complex or real) input signal in the form of a one-dimensional non-empty numpy array.
 - ```N``` is the number of frequencies to be found in the signal. This variable is optional and by default is set to 1.

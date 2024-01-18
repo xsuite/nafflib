@@ -18,16 +18,18 @@ module = Extension(extension_name,
                     "NAFFlib/source/signal_processing.c",
                     "NAFFlib/source/windows.c",
                    ],
-                   include_dirs=["NAFFlib/include", np.get_include()]
-)
+                   include_dirs=["NAFFlib/include", np.get_include()],
+                   extra_compile_args=["-std=c99"]
+                  )
 
 setup(
     name="NAFFlib",
-    version="1.0.0",
+    version="1.0.2",
     author="Konstantinos Paraschou",
     author_email="konstantinos.paraschou@cern.ch",
     description="A Python-wrapped C library which implements the NAFF algorithm",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url="https://github.com/PyCOMPLETE/NAFFlib",
     packages=find_packages(),
     license = 'LGPLv2.1',
