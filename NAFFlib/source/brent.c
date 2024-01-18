@@ -5,7 +5,7 @@ double brent_minimize(double (*f)(double,const merit_args*), double min, double 
 
     const int max_iter = 10000;
     const double golden = 0.3819660;
-    const double tolerance = 1.490116e-8; //ldexp(1.-25)
+    const double tolerance = 1.490116e-13; //ldexp(1.-25)
 
     double x, w, v, u; 
     double fu, fv, fw, fx;
