@@ -1,6 +1,65 @@
 import numpy as np
-import nafflib as nafflib
+import nafflib
 
+
+#-----
+# Henon map tune
+Q_h = 0.2064898024701758
+#-----
+example_signals = {}
+for x_start,label in zip([0.1,0.3,0.51],['low_J','mid_J','high_J']):
+    example_signals[label] = nafflib.henon_map(x_start,0.35*x_start,Q_h,int(3e4))
+
+
+def test_isinstance():
+    for label,signal in example_signals.items():
+        # Extracting signal
+        x,px = signal
+        z    = x - 1j*px
+
+        # Testing _fft_f0_estimate
+        output = nafflib._fft_f0_estimate(z)
+        assert isinstance(output, tuple), "_fft_f0_estimate output is not a tuple"
+        assert all(isinstance(item, float) for item in output), "Not all elements in _fft_f0_estimate output are floats"
+        
+        # Testing fundamental_frequency
+        amplitude, frequency = nafflib.fundamental_frequency(z)
+        assert isinstance(amplitude, complex), "Amplitude from fundamental_frequency is not complex"
+        assert isinstance(frequency, float), "Frequency from fundamental_frequency is not a float"
+
+
+        # Testing naff 
+        amplitudes, frequencies = nafflib.naff(z,num_harmonics = 10)
+        assert isinstance(amplitudes, np.ndarray), "Amplitudes from naff without pandas is not a numpy array"
+        assert isinstance(frequencies, np.ndarray), "Frequencies from naff without pandas is not a numpy array"
+        assert all(isinstance(item, complex) for item in amplitudes), "Not all amplitudes are complex"
+        assert all(isinstance(item, float) for item in frequencies), "Not all amplitudes are complex"
+
+        # Testing tune
+        frequency = nafflib.tune(z)
+        assert isinstance(frequency, float), "Output from tune is not a float"
+
+
+        # Testing harmonics
+        amplitudes, frequencies = nafflib.harmonics(z,num_harmonics = 10)
+        assert isinstance(amplitudes, np.ndarray), "Amplitudes from harmonics without pandas is not a numpy array"
+        assert isinstance(frequencies, np.ndarray), "Frequencies from harmonics without pandas is not a numpy array"
+        assert all(isinstance(item, complex) for item in amplitudes), "Not all amplitudes are complex"
+        assert all(isinstance(item, float) for item in frequencies), "Not all amplitudes are complex"
+
+        # Testing harmonics position only
+        amplitudes, frequencies = nafflib.harmonics(x,num_harmonics = 10)
+        assert isinstance(amplitudes, np.ndarray), "Amplitudes from harmonics without pandas is not a numpy array"
+        assert isinstance(frequencies, np.ndarray), "Frequencies from harmonics without pandas is not a numpy array"
+        assert all(isinstance(item, complex) for item in amplitudes), "Not all amplitudes are complex"
+        assert all(isinstance(item, float) for item in frequencies), "Not all amplitudes are complex"
+
+
+    # Testing multiparticle_tunes
+    multiparticles = [signal[0]-1j*signal[1] for signal in example_signals.values()]
+    output = nafflib.multiparticle_tunes(multiparticles)
+    assert isinstance(output, np.ndarray), "Output from multiparticle_tunes is not a numpy array"
+    assert output.dtype == float, "Elements in the output of multiparticle_tunes are not floats"
 
 
 # Testing old package
