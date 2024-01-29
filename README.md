@@ -1,90 +1,81 @@
-# NAFFlib
-Authors:  
-* **Sofia Kostoglou**  
-* **Konstantinos Paraschou**
-* **Dario Pellegrini** 
+# sussix
 
-Maintained by **Konstantinos Paraschou**.
+A Python implementation for the frequency analysis tool SUSSIX (R. Bartolini, F. Schmidt et al.) used to study beam dynamics in particle accelerators,  https://cds.cern.ch/record/702438/. 
 
-NAFFlib is a library written in C and wrapped in 
-Python which includes an implementation of the NAFF 
-algorithm. 
-[[1]](https://www.sciencedirect.com/science/article/pii/001910359090084M) 
-[[2]](http://jacow.org/ipac2017/papers/thpab044.pdf)
+Sussix is a generic NAFF approach which benefits from a well-optimized solver (`sussix/optimise.py`) to find the frequencies up to machine precision in a lot of cases. A Hann window is used to help with the convergence (`sussix/windowing.py`)
 
-## Installation
-### Automatic
-```
-$ pip install NAFFlib
-```
-Depending on the OS, you might need to 
-```
-$ pip3 install NAFFlib
-```
-for Python3 support.
+An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski, section 11.5: *A Numerical Method: Frequency Map Analysis* (https://www.worldscientific.com/doi/abs/10.1142/9781783262786_0011)
 
-### Local Installation
-```
-$ git clone git@github.com:PyCOMPLETE/NAFFlib.git
-$ cd NAFFlib
-$ make
-$ cd ..
-```
-to compile NAFFlib_c.so (Python3) and NAFFlib2_c.so (Python2) shared objects.
-If either of Python2 or Python3 is not supported in the OS, the line
-```
-$ make
-```
-should be replaced with either
-```
-$ make py2
-```
-for Python2 support or
-```
-$ make py3
-```
-for Python3 support.
-
-***
-The NAFFlib module can be imported by:
-
-```
-import NAFFlib
+# Installation
+```bash
+pip install sussix
 ```
 
-### Functions in NAFFlib:
-1. ```q = NAFFlib.get_tune(x, order, interpolation)```
-where:  
-- ```x``` is the (complex or real) input signal in the form of a one-dimensional non-empty numpy array.
-- ```order``` is the value of the Hann's window order parameter to be used with 0 corresponding to no window. This variable is optional and its default value is equal to 2.
-- ```interpolation``` is a boolean variable denoting whether the 7-point Newton-Cotes integration rule should be used. This variable is optional and its default value is equal to 0. It is not recommended that this is set 1.
-
-returns the single positive frequency ```q``` that is dominant in the Fourier spectrum.
+# Usage
+Examples can be found in the `examples` folder. The spectrum of the data is computed using position-momentum data and the order of the Hann window can be specified by the user. Altough the algorithm works with position-only data, the use of position-momentum is preferred if possible. 
 
 
-2. ```Q, A, B = NAFFlib.get_tunes(x, N, order, interpolation)```
-where:  
-- ```x``` is the (complex or real) input signal in the form of a one-dimensional non-empty numpy array.
-- ```N``` is the number of frequencies to be found in the signal. This variable is optional and by default is set to 1.
-- ```order``` is the value of the Hann's window order parameter to be used with 0 corresponding to no window. This variable is optional and its default value is equal to 2.
-- ```interpolation``` is a boolean variable denoting whether the 7-point Newton-Cotes integration rule should be used. This variable is optional and its default value is equal to 0. It is not recommended that this is set 1.
 
-returns three one-dimensional numpy arrays ```Q, A, B``` of size N with the first (being real-valued) containing the most dominant positive frequencies in the Fourier spectrum, the second containing the complex-valued amplitudes of the corresponding frequency and the third containing the complex-valued amplitudes of the negative of the corresponding frequency. It is recommended that this function is used with a real-valued input where the Fourier power spectrum is guaranteed to be an even function.
+### Tune
+The tune of a signal can be obtained from real or complexe signals as suchs:
+```python
+# Using the position only:
+#--------------------------------------------------
+sussix.get_tune(x,Hann_order=1)
+#--------------------------------------------------
+
+# Or position-momentum
+#--------------------------------------------------
+sussix.get_tune(x,px,Hann_order=1)
+#--------------------------------------------------
+``` 
+
+### Spectrum
+ 
+Phase space trajectories (x,px,y,py,zeta,pzeta) are used to extract the spectral lines of the signal with the `get_spectrum()` function. The number of harmonics is specified with the `number_of_harmonics` argument. Again, the function can be used with position only or position-momentum (preferred) information.
+
+```python
+# Individual spectrum
+
+# From position only:
+#--------------------------------------------------
+sussix.get_spectrum(x,number_of_harmonics = 5,Hann_order = 1)
+#--------------------------------------------------
+# From position-momentum
+#--------------------------------------------------
+sussix.get_spectrum(x,px,number_of_harmonics = 5,Hann_order = 1)
+#--------------------------------------------------
+
+# Or can pass multiple canonical pairs with kwargs
+#--------------------------------------------------
+sussix.get_spectrum(x     = None,
+                    px    = None,
+                    y     = None,
+                    py    = None,
+                    zeta  = None,
+                    pzeta = None,
+                    number_of_harmonics = 5,
+                    Hann_order          = 1)
+# ->    returns df where df['x'] has the complex amplitudes (amplitude + phase) 
+#       and frequencies in the x plane
+#--------------------------------------------------
 
 
-3. ```Q, A = NAFFlib.get_tunes_all(x, N, order, interpolation)```
-where:  
-- ```x``` is the (complex or real) input signal in the form of a one-dimensional non-empty numpy array.
-- ```N``` is the number of frequencies to be found in the signal. This variable is optional and by default is set to 1.
-- ```order``` is the value of the Hann's window order parameter to be used with 0 corresponding to no window. This variable is optional and its default value is equal to 2.
-- ```interpolation``` is a boolean variable denoting whether the 7-point Newton-Cotes integration rule should be used. This variable is optional and its default value is equal to 0. It is not recommended that this is set 1.
+``` 
 
-returns two one-dimensional numpy arrays ```Q, A``` of size ```N``` with the first (being real-valued) containing the most dominant (positive or negative) frequencies in the Fourier spectrum and the second containing the complex-valued amplitudes of the corresponding frequency. It is recommended that this function is used with a complex-valued input where the Fourier power spectrum is not necessarily an even function. It should be emphasized that *positive and negative frequencies are treated separately*. 
+### Analysis
 
-4. ```Q = NAFFlib.multiparticle_tunes(x, order, interpolation)```
-where:  
-- ```x``` is an array of (complex or real) input signals in the form of a two-dimensional non-empty numpy array. The first axis should correspond to the id of each different track while the second axis should correspond to the turn number.
-- ```order``` is the value of the Hann's window order parameter to be used with 0 corresponding to no window. This variable is optional and its default value is equal to 2.
-- ```interpolation``` is a boolean variable denoting whether the 7-point Newton-Cotes integration rule should be used. This variable is optional and its default value is equal to 0. It is not recommended that this is set 1.
+The indices (j,k,l,m) of the resonant frequencies can be found using `find_linear_combinations()` as done in the original SUSSIX code. 
 
-returns a one-dimensional numpy array ```Q``` of size ```len(x)``` which contains the single most dominant frequency of the different tracks. 
+The phase space trajectory can also be reconstructed from the frequency content using `generate_signal()`, which  simply sums the phasors optained from sussix. If the spectrum was obtained from position only, the user should discard the px output from `generate_signal`.
+```python
+x,px = sussix.generate_signal(spectrum.amplitude,spectrum.frequency,np.arange(int(1e4)))
+
+# Or if spectrum comes from position only:
+x,_ = sussix.generate_signal(spectrum.amplitude,spectrum.frequency,np.arange(int(1e4)))
+```
+
+
+
+
+

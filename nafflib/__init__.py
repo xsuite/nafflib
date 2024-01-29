@@ -1,13 +1,7 @@
-import sys
-if sys.version_info[0] < 3:
-    from .nafflib2_c import *
-else:
-    from .nafflib_c import *
+from .naff import naff,harmonics,tune,fundamental_frequency,_fft_f0_estimate,multiparticle_tunes
+from .toolbox import find_linear_combinations,generate_signal,generate_pure_KAM,henon_map
+from .windowing import hann
 
-import numpy as np
 
-def multiparticle_tunes(x, order=2, interpolation=0):
-    q_i = np.empty_like(x[:,0], dtype=np.float64)
-    for ii in range(len(x)):
-        q_i[ii] = get_tune(x[ii], order, interpolation)
-    return q_i
+# backward compatibility
+from .backward_compatibility import get_tune,get_tunes,get_tunes_all
