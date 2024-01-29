@@ -1,5 +1,5 @@
-#ifndef __NAFFLIB_PYNAFFLIB_H__
-#define __NAFFLIB_PYNAFFLIB_H__
+#ifndef __nafflib_PYnafflib_H__
+#define __nafflib_PYnafflib_H__
 
 #ifndef COMPILE_WITHOUT_PYTHON
 

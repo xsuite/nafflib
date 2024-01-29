@@ -143,7 +143,7 @@ static PyObject* get_tunes_all(PyObject* self, PyObject* args)
     return Py_BuildValue("NN", freqs, amps);
 }
 
-static PyMethodDef NAFFlibMethods[] =
+static PyMethodDef nafflibMethods[] =
 {
     {"get_tune", get_tune, METH_VARARGS, "returns single (most dominant) frequency"},
     {"get_tunes", get_tunes, METH_VARARGS, "returns N dominant frequencies with their amplitudes as well as the amplitudes of the opposite frequencies. Recommended with real-valued inputs."},
@@ -153,25 +153,25 @@ static PyMethodDef NAFFlibMethods[] =
 
 #if PY_MAJOR_VERSION >= 3
 
-static struct PyModuleDef cModPyNAFFlib_c = 
+static struct PyModuleDef cModPynafflib_c = 
 {
     PyModuleDef_HEAD_INIT,
-    "NAFFlib_c","The NAFF algorithm written in a python-wrapped C library.",
+    "nafflib_c","The NAFF algorithm written in a python-wrapped C library.",
     -1,
-    NAFFlibMethods
+    nafflibMethods
 };
 
-PyMODINIT_FUNC PyInit_NAFFlib_c(void)
+PyMODINIT_FUNC PyInit_nafflib_c(void)
 {
     import_array();
-    return PyModule_Create(&cModPyNAFFlib_c);
+    return PyModule_Create(&cModPynafflib_c);
 }
 
 #else
 
-PyMODINIT_FUNC initNAFFlib2_c(void)
+PyMODINIT_FUNC initnafflib2_c(void)
 {
-    (void) Py_InitModule("NAFFlib2_c", NAFFlibMethods);
+    (void) Py_InitModule("nafflib2_c", nafflibMethods);
     import_array();
 }
 

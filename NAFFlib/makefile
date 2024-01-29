@@ -2,8 +2,8 @@ objdir = object
 srcdir = source
 incdir = include
 
-python3inc = `python3 -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"`
-numpy3inc = `python3 -c "import numpy; print(numpy.get_include())"`
+python3inc = `python -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"`
+numpy3inc = `python -c "import numpy; print(numpy.get_include())"`
 python2inc = `python2 -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"`
 numpy2inc = `python2 -c "import numpy; print(numpy.get_include())"`
 
@@ -13,14 +13,14 @@ cc = gcc
 cflags = -O3 -std=c99 -Wall -fPIC -I$(incdir) 
 ldflags =  -lm #-lpython
 
-all: NAFFlib_c.so NAFFlib2_c.so
-py3: NAFFlib_c.so
-py2: NAFFlib2_c.so
+all: nafflib_c.so nafflib2_c.so
+py3: nafflib_c.so
+py2: nafflib2_c.so
 
-NAFFlib_c.so: $(objects) $(objdir)/pynafflib3.o
+nafflib_c.so: $(objects) $(objdir)/pynafflib3.o
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
 
-NAFFlib2_c.so: $(objects) $(objdir)/pynafflib2.o
+nafflib2_c.so: $(objects) $(objdir)/pynafflib2.o
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 
 
 $(objdir)/windows.o: $(srcdir)/windows.c $(incdir)/windows.h 
@@ -50,5 +50,5 @@ $(objdir)/pynafflib2.o: $(srcdir)/pynafflib.c $(incdir)/pynafflib.h
 
 clean:
 	rm $(objdir)/*
-	rm NAFFlib_c.so
-	rm NAFFlib2_c.so
+	rm nafflib_c.so
+	rm nafflib2_c.so
