@@ -4,8 +4,8 @@ incdir = include
 
 python3inc = `python -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"`
 numpy3inc = `python -c "import numpy; print(numpy.get_include())"`
-python2inc = `python2 -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"`
-numpy2inc = `python2 -c "import numpy; print(numpy.get_include())"`
+# python2inc = `python2 -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"`
+# numpy2inc = `python2 -c "import numpy; print(numpy.get_include())"`
 
 objects = $(objdir)/windows.o $(objdir)/signal_processing.o $(objdir)/brent.o $(objdir)/frequency.o $(objdir)/fft.o  
 
@@ -13,9 +13,9 @@ cc = gcc
 cflags = -O3 -std=c99 -Wall -fPIC -I$(incdir) 
 ldflags =  -lm #-lpython
 
-all: nafflib_c.so nafflib2_c.so
+all: nafflib_c.so #nafflib2_c.so
 py3: nafflib_c.so
-py2: nafflib2_c.so
+# py2: nafflib2_c.so
 
 nafflib_c.so: $(objects) $(objdir)/pynafflib3.o
 	@$(cc) --shared -fPIC $(cflags) $^ -o $@ $(ldflags) 

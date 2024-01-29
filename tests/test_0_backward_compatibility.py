@@ -2,15 +2,6 @@ import numpy as np
 import nafflib as nafflib
 
 
-#-----
-# Henon map tune
-Q_h = 0.2064898024701758
-#-----
-example_signals = {}
-for x_start,label in zip([0.1,0.3,0.51],['low_J','mid_J','high_J']):
-    example_signals[label] = nafflib.henon_map(x_start,0.35*x_start,Q_h,int(3e4))
-
-
 
 # Testing old package
 # Should work on both old and revamped versions!
@@ -54,4 +45,7 @@ def test_NAFFlib():
         assert np.allclose(Q[0],Q_h,atol=1e-1,rtol=0), f"Found wrong tune, particle@{label}"
         assert np.allclose(Q[:10],Q_r,atol=1e-8,rtol=0), f"Expected tolerance not met, on Q, particle@{label}"
         assert np.allclose(A[:10],A_r,atol=1e-5,rtol=0), f"Expected tolerance not met, on A, particle@{label}"
+
+        # Checking get_tune function as well
+        assert np.isclose(nafflib.get_tune(z),Q[0],atol=1e-10,rtol=0), f"Expected tolerance not met, on A, particle@{label}"
 
