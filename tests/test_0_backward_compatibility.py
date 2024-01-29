@@ -47,5 +47,5 @@ def test_NAFFlib():
         assert np.allclose(A[:10],A_r,atol=1e-5,rtol=0), f"Expected tolerance not met, on A, particle@{label}"
 
         # Checking get_tune function as well
-        assert np.isclose(nafflib.get_tune(z),Q[0],atol=1e-10,rtol=0), f"Expected tolerance not met, on A, particle@{label}"
+        assert np.isclose(nafflib.get_tune(z),Q[0],atol=1e-10,rtol=0), f"Expected tolerance not met from get_tune, particle@{label}"
 
