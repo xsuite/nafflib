@@ -1,6 +1,6 @@
 # nafflib
 
-**P. Belanger, K. Paraschou et al.**
+**P. Belanger, K. Paraschou, G. Sterbini, G. Iadarola et al.**
 
 A Python implementation of the Numerical Analysis of Fundamental Frequencies algorithm (NAFF [1-2]) from **J. Laskar**. This implementation uses a tailor-made optimizer (`nafflib.optimise.newton_method`, from **A. Bazzani, R. Bartolini & F. Schmidt**) to find the frequencies up to machine precision for tracking data. A Hann window is used to help with the convergence (`nafflib.windowing.hann`).
 
@@ -66,7 +66,7 @@ For stable motion sufficiently close to integrable invariants of a conservative 
 
 To properly study the harmonics of a system, the user should almost always try to unambigously identify the spectral lines, since very close lines can be mistaken for one another and **ordering them by amplitude will definitely lead to the wrong results**. 
 
-Such a categorization of the spectral lines can be done for stable motion from a hamiltonian system like the LHC or any standard map by using the linear combination of fundamental frequencies as a unique ID to follow a given spectral line. See for example the `examples/nb_convergence.ipynb` notebook for such an approach.
+Such a categorization of the spectral lines can be done for stable motion from a hamiltonian system like the LHC or any standard map by using the linear combination of fundamental frequencies as a unique ID to follow a given spectral line. See for example the `examples/nb_convergence.ipynb` notebook for such an approach and the `examples/ex_04_regularity_4D.py` for an example of the problems which can arise when ordering spectral lines by amplitude.
 
 
 ```python

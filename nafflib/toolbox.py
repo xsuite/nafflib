@@ -259,7 +259,7 @@ def generate_pure_KAM(amplitudes,combinations,fundamental_tunes,N,return_frequen
     combinations : list of tuples or tuple
         Combination indices for linear combination of the fundamental tunes.
     fundamental_tunes : list
-        Fundamental tunes for resonance calculation.
+        Fundamental tunes for linear combinations.
     N : ndarray
         Array of turn numbers for signal generation.
     return_frequencies : bool, optional
