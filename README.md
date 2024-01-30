@@ -6,7 +6,7 @@ A Python implementation of the Numerical Analysis of Fundamental Frequencies alg
 
 An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski [3].
 
-[1] J. Laskar, Introduction to Frequency Map Analysis. https://link.springer.com/content/pdf/10.1007/978-94-011-4673-9_13.pdf  
+[1] J. Laskar, Introduction to Frequency Map Analysis. http://link.springer.com/10.1007/978-94-011-4673-9_13  
 [2] J. Laskar et al., The Measure of Chaos by the Numerical Analysis of the Fundamental Frequencies. Application to the Standard Mapping. https://doi.org/10.1016/0167-2789(92)90028-L   
 [3] A. Wolski,Beam Dynamics in High Energy Particle Accelerators, Section 11.5: *A Numerical Method: Frequency Map Analysis*. https://www.worldscientific.com/doi/abs/10.1142/9781783262786_0011 
 # Installation
