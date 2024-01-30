@@ -4,6 +4,25 @@ import numpy as np
 #---------------------------------------
 # Taken from 10.5170/CERN-1994-002, eq. 5.1.2
 def henon_map(x,px,Q,num_turns):
+    """
+    Simulates the Henon map for 2D phase space.
+
+    Parameters
+    ----------
+    x : float
+        Initial position of the particle.
+    px : float
+        Initial momentum of the particle.
+    Q : float
+        Tune of the map.
+    num_turns : int
+        Number of turns to simulate.
+
+    Returns
+    -------
+    x,px : tuple of ndarray
+        Arrays representing the position and momentum of the particle at each turn.
+    """
     z_vec = np.nan*np.ones(num_turns) + 1j*np.nan*np.ones(num_turns)
     z_vec[0] = x - 1j*px
     for ii in range(num_turns-1):
@@ -18,6 +37,28 @@ def henon_map(x,px,Q,num_turns):
 #---------------------------------------
 # Taken from 10.5170/CERN-1994-002, eq. 7.1.5
 def henon_map_4D(x,px,y,py,Qx,Qy,coupling,num_turns):
+    """
+    Simulates the 4D Henon map for phase space, incorporating coupling between two oscillations.
+
+    Parameters
+    ----------
+    x, y : float
+        Initial positions in two orthogonal dimensions.
+    px, py : float
+        Initial momenta in two orthogonal dimensions.
+    Qx, Qy : float
+        Tunes of the map in each dimension.
+    coupling : float
+        Coupling strength between the dimensions.
+    num_turns : int
+        Number of turns to simulate.
+
+    Returns
+    -------
+    x,px,y,py : tuple of ndarray
+        Arrays representing the position and momentum of the particle in each dimension at each turn.
+    """
+
     z1_vec = np.nan*np.ones(num_turns) + 1j*np.nan*np.ones(num_turns)
     z2_vec = np.nan*np.ones(num_turns) + 1j*np.nan*np.ones(num_turns)
     z1_vec[0] = x - 1j*px
@@ -38,7 +79,26 @@ def henon_map_4D(x,px,y,py,Qx,Qy,coupling,num_turns):
 
 #---------------------------------------
 def parse_real_signal(amplitudes,frequencies,conjugate_tol=1e-10,to_pandas = False):
-    
+    """
+    Parses a real signal from its complex representation, identifying and handling complex conjugates.
+
+    Parameters
+    ----------
+    amplitudes : ndarray
+        Amplitudes of the complex signal.
+    frequencies : ndarray
+        Frequencies of the complex signal.
+    conjugate_tol : float, optional
+        Tolerance for identifying complex conjugates. Defaults to 1e-10.
+    to_pandas : bool, optional
+        If True, returns a pandas DataFrame; otherwise, returns two arrays.
+
+    Returns
+    -------
+    amplitudes,frequencies : DataFrame or tuple of ndarray
+        Amplitudes and frequencies of the real signal components, either as a DataFrame or as two arrays.
+    """
+
     A,Q = amplitudes,frequencies
     phasors = A*np.exp(2*np.pi*1j*Q)
 
@@ -90,8 +150,23 @@ def parse_real_signal(amplitudes,frequencies,conjugate_tol=1e-10,to_pandas = Fal
 #---------------------------------------
 def find_linear_combinations(frequencies,fundamental_tunes = [],max_harmonic_order = 10,to_pandas = False):
     """
-    Categorisation of resonances. Returns the linear combinations of the fundamental tunes that are closest to the provided frequencies.
-    This should be called after get_harmonics to have a list of frequencies.
+    Identifies linear combinations of fundamental tunes that closely match the given frequencies.
+
+    Parameters
+    ----------
+    frequencies : ndarray
+        Array of frequencies to analyze.
+    fundamental_tunes : list, optional
+        List of fundamental tunes for resonance analysis. Length can be 1, 2, or 3.
+    max_harmonic_order : int, optional
+        Maximum order of harmonics to consider.
+    to_pandas : bool, optional
+        If True, returns a pandas DataFrame; otherwise, returns lists and an array.
+
+    Returns
+    -------
+    r_values,error,f_values : DataFrame or tuple
+        Resonance values, errors, and corresponding frequencies, either as a DataFrame or separate data structures.
     """
 
     assert len(fundamental_tunes) in [1,2,3], "need 1, 2 or 3 fundamental tunes (2D,4D,6D)"
@@ -140,7 +215,21 @@ def find_linear_combinations(frequencies,fundamental_tunes = [],max_harmonic_ord
 #---------------------------------------
 def generate_signal(amplitudes,frequencies,N):
     """
-    Generate a signal with the provided amplitudes and frequencies over turns N.
+    Generates a complex signal from given amplitudes and frequencies over a range of turns.
+
+    Parameters
+    ----------
+    amplitudes : list or float
+        Amplitudes of the components of the signal.
+    frequencies : list or float
+        Frequencies of the components of the signal.
+    N : ndarray
+        Array of turn numbers for which the signal is generated.
+
+    Returns
+    -------
+    x,px : tuple of ndarray
+        Arrays representing the position and momentum of the particle at each turn.
     """
 
     if isinstance(amplitudes,(float,int)):
@@ -159,22 +248,40 @@ def generate_signal(amplitudes,frequencies,N):
 
 
 #---------------------------------------
-def generate_pure_KAM(amplitudes,resonances,fundamental_tunes,N,return_frequencies=False):
+def generate_pure_KAM(amplitudes,combinations,fundamental_tunes,N,return_frequencies=False):
     """
-    Generate a signal with the provided amplitudes and frequencies over turns N.
+    Generates a signal using the Kolmogorov-Arnold-Moser (KAM) theorem, simulating resonances.
+
+    Parameters
+    ----------
+    amplitudes : list or float
+        Amplitudes of the combinations.
+    combinations : list of tuples or tuple
+        Combination indices for linear combination of the fundamental tunes.
+    fundamental_tunes : list
+        Fundamental tunes for resonance calculation.
+    N : ndarray
+        Array of turn numbers for signal generation.
+    return_frequencies : bool, optional
+        If True, also returns the frequencies used for signal generation.
+
+    Returns
+    -------
+    x,px : tuple
+        Arrays representing the position and momentum of the particle at each turn and, optionally, frequencies used for generation.
     """
 
     if isinstance(amplitudes,(float,int)):
         amplitudes = [amplitudes]
-    if isinstance(resonances,(float,int)):
-        resonances = [resonances]
+    if isinstance(combinations,(float,int)):
+        combinations = [combinations]
 
-    assert len(amplitudes) == len(resonances), "amplitudes and jklm must have the same length"
+    assert len(amplitudes) == len(combinations), "amplitudes and resonances must have the same length"
 
     # Computing the frequencies
     Q_vec = fundamental_tunes + [1]
-    r_vec = resonances
-    assert len(Q_vec) == np.shape(r_vec)[1], "resonances should have n+1 indices if n fundamental tunes are provided"
+    r_vec = combinations
+    assert len(Q_vec) == np.shape(r_vec)[1], "combinations should have n+1 indices if n fundamental tunes are provided"
     frequencies = [np.dot(_r,Q_vec) for _r in r_vec]
 
     # Generating the signal

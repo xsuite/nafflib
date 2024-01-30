@@ -21,7 +21,7 @@ def hann(N,order=1):
 
     Returns
     -------
-    numpy.ndarray
+    window_signal : numpy.ndarray
         The Hann window values for each turn index in N. The window is centered 
         around the middle of the dataset.
 
@@ -29,7 +29,6 @@ def hann(N,order=1):
     -----
     The formula used for the Hann window is:
     (2^p)*math.factorial(p)^2 / (math.factorial(2*p)) * (1 + cos(2*pi*(N-center)/Nt))^p
-    where 'center' is calculated based on the parity of Nt.
     """
     # Initialisation
     #---------------

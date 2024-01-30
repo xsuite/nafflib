@@ -5,6 +5,25 @@ import numba
 
 @numba.jit(nopython=True)
 def raise2powerArray(a,b):
+    """
+    Raises a complex number 'a' to a series of powers up to 'b'.
+
+    This function computes a^0, a^1, ..., a^(b-1) efficiently using a cumulative 
+    multiplication approach to avoid redundant calculations.
+
+    Parameters
+    ----------
+    a : complex
+        The base number to be raised to the power series.
+    b : int
+        The number of power terms to compute, with the highest being a^(b-1).
+
+    Returns
+    -------
+    out : ndarray
+        An array of complex numbers, each element being 'a' raised to increasing powers.
+
+    """
     out    = np.zeros(b) + 1j*np.zeros(b)
     out[0] = 1
     out[1] = a
@@ -15,16 +34,26 @@ def raise2powerArray(a,b):
 
 def laskar_dfft(freq,N,z):
     """
-    Discrete fourier transform of z, as defined in A. Wolski, Sec. 11.5.
+    Computes the discrete Fourier transform (DFT) of a signal at a specified frequency.
     In a typical dfft , freq = m/Nt where m is an integer. Here m could take any value.
-    Note: this will differ from sussix.f.calcr by a factor 1/Nt (but does not slow the convergence of the Newton method, so not a problem)
-    ----------------------------------------------------
-        freq: discrete frequency to evaluate the dfft at
-        N   : turn numbers of the signal
-        z   : complex array of the signal
+    
+    The DFT is calculated at a single frequency 'freq' for a complex signal 'z'.
+    The function also computes the derivative of the DFT with respect to the frequency.
+    This implementation is based on A. Wolski's method (Sec. 11.5).
 
-        returns dfft and its derivative.
-    ----------------------------------------------------
+    Parameters
+    ----------
+    freq : float
+        The frequency at which to evaluate the DFT.
+    N : int
+        The number of turns in the signal.
+    z : ndarray
+        The complex signal array.
+
+    Returns
+    -------
+    _dfft,_dfft_derivative : tuple
+        A tuple containing the DFT of the signal at 'freq' and its derivative.
     """
     Nt = len(z)
 
@@ -42,7 +71,36 @@ def laskar_dfft(freq,N,z):
 
 
 def newton_method(z,N,freq_estimate,resolution,tol = 1e-10,num_macro_iterations = 10,num_micro_iterations = 100):
+    """
+    From A. Bazzani, R. Bartolini & F. Schmidt (SUSSIX)
 
+    Applies Newton's method to find a frequency in a signal where the derivative of its DFT is zero.
+
+    This function iteratively refines the frequency estimate of a signal 'z' to locate 
+    frequencies where the DFT's derivative is zero.
+
+    Parameters
+    ----------
+    z : ndarray
+        The complex signal array.
+    N : int
+        The number of turns in the signal.
+    freq_estimate : float
+        Initial estimate of the frequency.
+    resolution : float
+        The resolution used in frequency refinement.
+    tol : float, optional
+        The tolerance level for convergence. Default is 1e-10.
+    num_macro_iterations : int, optional
+        The number of macro iterations. Default is 10.
+    num_micro_iterations : int, optional
+        The number of micro iterations. Default is 100.
+
+    Returns
+    -------
+    amplitude,frequency : tuple
+        A tuple containing the amplitude at the found frequency and the frequency itself.
+    """
 
     # Increase resolution by factor 5
     resolution = resolution/5  

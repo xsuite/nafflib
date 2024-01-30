@@ -8,21 +8,21 @@ from .toolbox import parse_real_signal
 
 def _fft_f0_estimate(z,force_len = None):
     """
-    Estimate the main frequency using an FFT. The signal is cropped to the closest power 
-    of 2 for improved accuracy.
+    Estimate the main frequency of a signal using FFT. The signal is cropped or padded to a specified length 
+    or the closest power of 2 for improved accuracy.
 
     Parameters
     ----------
-    z : numpy.ndarray
-        Complex array of the signal.
-    n_forced : int, optional
-        Number of turns to use for the FFT. If > len(z), the signal is padded 
-        with zeros. Defaults to None.
+    z : ndarray
+        The complex signal array.
+    force_len : int, optional
+        The length to which the signal is cropped or padded for the FFT. If None, 
+        the length is set to the closest power of 2. Defaults to None.
 
     Returns
     -------
-    tuple of float
-        A tuple containing the estimated tune and the resolution.
+    tune_est,resolution : tuple
+        The estimated main frequency (tune) and the resolution of the estimation.
     """
     # Cropping signal to closest power of 2
     if force_len is None:
@@ -40,11 +40,24 @@ def _fft_f0_estimate(z,force_len = None):
 
 def fundamental_frequency(z,N = None,window_order = 1,window_type = 'hann'):
     """
-    Subroutine of the NAFF algorithm. 
-    1. Applies a Hann window
-    2. Estimates the fundamental frequency with an FFT 
-    3. Refines the estimate with a complex Newton method
-    4. Returns the main frequency and the amplitude.
+    Finds the fundamental frequency of a signal using the NAFF algorithm. It applies a window, 
+    estimates the frequency using FFT, and then refines it with the Newton method.
+
+    Parameters
+    ----------
+    z : ndarray
+        The complex signal array.
+    N : ndarray or None, optional
+        The array of turn numbers. If None, it defaults to a range equal to the length of z.
+    window_order : int, optional
+        The order of the windowing function.
+    window_type : str, optional
+        The type of windowing function to use. Defaults to 'hann'.
+
+    Returns
+    -------
+    amplitude,f0 : tuple
+        The amplitude and the fundamental frequency of the signal.
     """
 
     # Initialisation
@@ -75,7 +88,26 @@ def fundamental_frequency(z,N = None,window_order = 1,window_type = 'hann'):
 
 def naff(z,num_harmonics = 1,window_order = 1,window_type = 'hann',to_pandas = False):
     """
-    Applies the NAFF algorithm to find the spectral lines of a signal.
+    Applies the NAFF algorithm to find spectral lines of a signal. It identifies multiple harmonics 
+    of the signal, removes them, and repeats the process.
+
+    Parameters
+    ----------
+    z : ndarray
+        The complex signal array.
+    num_harmonics : int, optional
+        The number of harmonics to identify in the signal.
+    window_order : int, optional
+        The order of the windowing function.
+    window_type : str, optional
+        The type of windowing function to use. Defaults to 'hann'.
+    to_pandas : bool, optional
+        If True, returns a pandas DataFrame; otherwise, returns two arrays.
+
+    Returns
+    -------
+    amplitudes,frequencies : tuple or DataFrame
+        Harmonic amplitudes and frequencies, either as a DataFrame or as two separate arrays.
     """
 
     assert num_harmonics >=1, 'number_of_harmonics needs to be >= 1'
@@ -111,7 +143,25 @@ def naff(z,num_harmonics = 1,window_order = 1,window_type = 'hann',to_pandas = F
 
 
 def tune(x,px=None,window_order = 1,window_type = 'hann'):
+    """
+    Computes the tune (fundamental frequency) of a signal or a complex signal formed from x and px.
 
+    Parameters
+    ----------
+    x : ndarray
+        The signal array or the real part of a complex signal.
+    px : ndarray, optional
+        The imaginary part of the complex signal, if any. If None, x is treated as the full signal.
+    window_order : int, optional
+        The order of the windowing function.
+    window_type : str, optional
+        The type of windowing function to use. Defaults to 'hann'.
+
+    Returns
+    -------
+    freq : float
+        The tune of the signal.
+    """
     # initialisation
     #---------------------
     if px is not None:
@@ -134,6 +184,29 @@ def tune(x,px=None,window_order = 1,window_type = 'hann'):
 
 
 def harmonics(x,px = None,num_harmonics = 1,window_order = 1,window_type = 'hann',to_pandas = False):
+    """
+    Identifies harmonics in a signal or a complex signal formed from x and px using the NAFF algorithm.
+
+    Parameters
+    ----------
+    x : ndarray
+        The signal array or the real part of a complex signal.
+    px : ndarray, optional
+        The imaginary part of the complex signal, if any. If None, x is treated as the full signal.
+    num_harmonics : int, optional
+        The number of harmonics to identify in the signal.
+    window_order : int, optional
+        The order of the windowing function.
+    window_type : str, optional
+        The type of windowing function to use. Defaults to 'hann'.
+    to_pandas : bool, optional
+        If True, returns a pandas DataFrame; otherwise, returns two arrays.
+
+    Returns
+    -------
+    amplitudes,frequencies : tuple or DataFrame
+        Harmonic amplitudes and frequencies, either as a DataFrame or as two separate arrays.
+    """
     # initialisation
     #---------------------
     if px is not None:
@@ -173,7 +246,27 @@ def harmonics(x,px = None,num_harmonics = 1,window_order = 1,window_type = 'hann
 
 
 def multiparticle_tunes(x,px=None,window_order = 1,window_type = 'hann'):
+    """
+    Calculates the tunes for multiple particles given their positions and optionally their momenta.
+    This function computes the fundamental frequency for each particle individually.
 
+    Parameters
+    ----------
+    x : ndarray or list of ndarray
+        An array or a list of arrays containing the position data of each particle.
+    px : ndarray or list of ndarray, optional
+        An array or a list of arrays containing the momentum data of each particle. 
+        If None, only position data is used. Defaults to None.
+    window_order : int, optional
+        The order of the windowing function used in frequency analysis. Defaults to 1.
+    window_type : str, optional
+        The type of windowing function to apply. Defaults to 'hann'.
+
+    Returns
+    -------
+    frequencies : ndarray
+        An array containing the computed tunes for each particle.
+    """
     n_particles = np.shape(x)[0]
 
     # Initializating px
