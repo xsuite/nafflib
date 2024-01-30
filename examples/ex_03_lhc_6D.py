@@ -36,51 +36,51 @@ for file in files:
     
 
 
+# TODO
 
 
+# fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+# plt.suptitle('Particles on momentum')
+# for part in particles_on_p:
+#     for plane,ax in zip(['x','y','zeta'],axes):
+#         plt.sca(ax)
+#         plt.plot(part[plane],part[f'p{plane}'],'.',color='k',alpha=0.1)
 
-fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-plt.suptitle('Particles on momentum')
-for part in particles_on_p:
-    for plane,ax in zip(['x','y','zeta'],axes):
-        plt.sca(ax)
-        plt.plot(part[plane],part[f'p{plane}'],'.',color='k',alpha=0.1)
-
-# Adding labels
-for plane,ax in zip(['x','y','zeta'],axes):
-    plt.sca(ax)
-    plt.axis('equal')
-    if plane == 'zeta':
-        plane = '\zeta'
-    plt.xlabel(rf'$\tilde {plane}/\sqrt{{\varepsilon_{plane}}}$')
-    plt.ylabel(rf'$\tilde p_{plane}/\sqrt{{\varepsilon_{plane}}}$')
+# # Adding labels
+# for plane,ax in zip(['x','y','zeta'],axes):
+#     plt.sca(ax)
+#     plt.axis('equal')
+#     if plane == 'zeta':
+#         plane = '\zeta'
+#     plt.xlabel(rf'$\tilde {plane}/\sqrt{{\varepsilon_{plane}}}$')
+#     plt.ylabel(rf'$\tilde p_{plane}/\sqrt{{\varepsilon_{plane}}}$')
     
-    if plane == '\zeta':
-        plt.xlim(-0.5,0.5)
-        plt.ylim(-0.5,0.5)
-    else:
-        plt.xlim(-6,6)
-        plt.ylim(-6,6)
+#     if plane == '\zeta':
+#         plt.xlim(-0.5,0.5)
+#         plt.ylim(-0.5,0.5)
+#     else:
+#         plt.xlim(-6,6)
+#         plt.ylim(-6,6)
 
-fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-plt.suptitle('Particles off momentum')
-for part in particles_off_p:
-    for plane,ax in zip(['x','y','zeta'],axes):
-        plt.sca(ax)
-        plt.plot(part[plane],part[f'p{plane}'],'.',color='k',alpha=0.1)
+# fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+# plt.suptitle('Particles off momentum')
+# for part in particles_off_p:
+#     for plane,ax in zip(['x','y','zeta'],axes):
+#         plt.sca(ax)
+#         plt.plot(part[plane],part[f'p{plane}'],'.',color='k',alpha=0.1)
 
-# Adding labels
-for plane,ax in zip(['x','y','zeta'],axes):
-    plt.sca(ax)
-    plt.axis('equal')
-    if plane == 'zeta':
-        plane = '\zeta'
-    plt.xlabel(rf'$\tilde {plane}/\sqrt{{\varepsilon_{plane}}}$')
-    plt.ylabel(rf'$\tilde p_{plane}/\sqrt{{\varepsilon_{plane}}}$')
+# # Adding labels
+# for plane,ax in zip(['x','y','zeta'],axes):
+#     plt.sca(ax)
+#     plt.axis('equal')
+#     if plane == 'zeta':
+#         plane = '\zeta'
+#     plt.xlabel(rf'$\tilde {plane}/\sqrt{{\varepsilon_{plane}}}$')
+#     plt.ylabel(rf'$\tilde p_{plane}/\sqrt{{\varepsilon_{plane}}}$')
     
-    if plane == '\zeta':
-        plt.xlim(-0.5,0.5)
-        plt.ylim(-0.5,0.5)
-    else:
-        plt.xlim(-6,6)
-        plt.ylim(-6,6)
+#     if plane == '\zeta':
+#         plt.xlim(-0.5,0.5)
+#         plt.ylim(-0.5,0.5)
+#     else:
+#         plt.xlim(-6,6)
+#         plt.ylim(-6,6)
