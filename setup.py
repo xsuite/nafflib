@@ -37,7 +37,7 @@ setup(
         'pandas',
         'numba'
         ],
-    author='P. Belanger et al.',
+    author='P. Belanger, K. Paraschou et al.',
     license='Apache 2.0',
     download_url="https://pypi.python.org/pypi/nafflib",
     project_urls={

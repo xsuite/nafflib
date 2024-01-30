@@ -1,78 +1,89 @@
-# sussix
+# nafflib
 
-A Python implementation for the frequency analysis tool SUSSIX (R. Bartolini, F. Schmidt et al.) used to study beam dynamics in particle accelerators,  https://cds.cern.ch/record/702438/. 
+**P. Belanger, K. Paraschou et al.**
 
-Sussix is a generic NAFF approach which benefits from a well-optimized solver (`sussix/optimise.py`) to find the frequencies up to machine precision in a lot of cases. A Hann window is used to help with the convergence (`sussix/windowing.py`)
+A Python implementation of the Numerical Analysis of Fundamental Frequencies algorithm (NAFF) from **J. Laskar**. This implementation uses a tailor-made optimizer [`nafflib.optimise.newton_method`, from **A. Bazzani, R. Bartolini & F. Schmidt**] to find the frequencies up to machine precision for tracking data. A Hann window is used to help with the convergence (`nafflib.windowing.hann`).
 
-An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski, section 11.5: *A Numerical Method: Frequency Map Analysis* (https://www.worldscientific.com/doi/abs/10.1142/9781783262786_0011)
+Documentation to come... An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski, section 11.5: *A Numerical Method: Frequency Map Analysis* (https://www.worldscientific.com/doi/abs/10.1142/9781783262786_0011)
 
 # Installation
 ```bash
-pip install sussix
+pip install nafflib
 ```
 
 # Usage
-Examples can be found in the `examples` folder. The spectrum of the data is computed using position-momentum data and the order of the Hann window can be specified by the user. Altough the algorithm works with position-only data, the use of position-momentum is preferred if possible. 
+Examples can be found in the `examples` folder. The harmonics of the data are computed using position-momentum data and the order of the window can be specified by the user. Altough the algorithm works with position-only data, the use of position-momentum is preferred if possible. 
 
 
 
 ### Tune
 The tune of a signal can be obtained from real or complexe signals as suchs:
 ```python
-# Using the position only:
+# Let's assume the following signal
+z = x - 1j*px
+
+# The two following calls are equivalent
 #--------------------------------------------------
-sussix.get_tune(x,Hann_order=1)
+Q = nafflib.tune(z,window_order = 1,window_type = 'hann')
+Q = nafflib.tune(x,px,window_order = 1,window_type = 'hann')
 #--------------------------------------------------
 
-# Or position-momentum
+# Using the position only:
 #--------------------------------------------------
-sussix.get_tune(x,px,Hann_order=1)
+Q = nafflib.tune(x,window_order = 1,window_type = 'hann')
 #--------------------------------------------------
 ``` 
 
-### Spectrum
+### Harmonics
  
-Phase space trajectories (x,px,y,py,zeta,pzeta) are used to extract the spectral lines of the signal with the `get_spectrum()` function. The number of harmonics is specified with the `number_of_harmonics` argument. Again, the function can be used with position only or position-momentum (preferred) information.
+Phase space trajectories (x,px),(y,py),(zeta,pzeta) are used to extract the spectral lines of the signal plane-by-plane with the `harmonics()` function. The number of harmonics is specified with the `num_harmonics` argument. Again, the function can be used with position only or position-momentum (preferred) information.
 
 ```python
-# Individual spectrum
+# Let's assume the following signal
+z = x - 1j*px
+
+# The two following calls are equivalent
+#--------------------------------------------------
+spectrum = harmonics(z,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
+spectrum = harmonics(x,px,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
+#-> where spectrum = (amplitudes,frequencies)
+#--------------------------------------------------
 
 # From position only:
 #--------------------------------------------------
-sussix.get_spectrum(x,number_of_harmonics = 5,Hann_order = 1)
+spectrum = harmonics(x,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
+#-> where spectrum = (amplitudes,frequencies)
 #--------------------------------------------------
-# From position-momentum
-#--------------------------------------------------
-sussix.get_spectrum(x,px,number_of_harmonics = 5,Hann_order = 1)
-#--------------------------------------------------
-
-# Or can pass multiple canonical pairs with kwargs
-#--------------------------------------------------
-sussix.get_spectrum(x     = None,
-                    px    = None,
-                    y     = None,
-                    py    = None,
-                    zeta  = None,
-                    pzeta = None,
-                    number_of_harmonics = 5,
-                    Hann_order          = 1)
-# ->    returns df where df['x'] has the complex amplitudes (amplitude + phase) 
-#       and frequencies in the x plane
-#--------------------------------------------------
-
 
 ``` 
 
-### Analysis
+### Categorization of harmonics
 
-The indices (j,k,l,m) of the resonant frequencies can be found using `find_linear_combinations()` as done in the original SUSSIX code. 
+For stable motion in quasiperiodic system, the frequencies are expected to come as a linear combinations of the fundamental frequencies (3 for a 6D system). 
 
-The phase space trajectory can also be reconstructed from the frequency content using `generate_signal()`, which  simply sums the phasors optained from sussix. If the spectrum was obtained from position only, the user should discard the px output from `generate_signal`.
+To properly study the spectral lines, the user should almost always try to unambigously identify
+them, since very close spectral lines can be mistaken for one another and **ordering by amplitude will definitely lead to the wrong results**. 
+
+Such a categorization of the spectral lines can be done for stable motion from a hamiltonian system like the LHC or any standard map by using the linear combination of fundamental frequencies as a unique ID to follow a given spectral line. See for example the `examples/nb_convergence.ipynb` notebook for such an approach.
+
+
 ```python
-x,px = sussix.generate_signal(spectrum.amplitude,spectrum.frequency,np.arange(int(1e4)))
+# Let's assume the following dictionnary of phase space data:
+data  = {'x':x,'px':px,'y':y,'py':py,'zeta':zeta,'pzeta':pzeta}
 
-# Or if spectrum comes from position only:
-x,_ = sussix.generate_signal(spectrum.amplitude,spectrum.frequency,np.arange(int(1e4)))
+# Let's extract the fundamental frequencies
+Q_vec = [nafflib.tune(data[f'{plane}'],data[f'p{plane}']) for plane in ['x','y','zeta']]
+
+# Let's extract some harmonics
+A,Q = harmonics(x,px,num_harmonics = 5)
+
+# Let's find the linear combination of fundamental tunes (Q_vec)
+#-----------------
+# Note: max_harmonics_order might need to be set to a higher value to find
+#       the proper linear combination of frequencies
+#-----------------
+categorization = nafflib.find_linear_combinations(Q,fundamental_tunes= Q_vec,max_harmonic_order = 10)
+#-> where categorization = (r_vec,err,combined_frequency)
 ```
 
 

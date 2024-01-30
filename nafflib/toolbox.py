@@ -115,6 +115,7 @@ def find_linear_combinations(frequencies,fundamental_tunes = [],max_harmonic_ord
     
     # Find the closest combination for each frequency
     r_values = []
+    f_values = []
     err = []
     for freq in frequencies:
 
@@ -126,13 +127,14 @@ def find_linear_combinations(frequencies,fundamental_tunes = [],max_harmonic_ord
         closest_value = all_combinations[closest_idx]
 
         r_values.append(closest_combination)
+        f_values.append(closest_value)
         err.append(np.abs(closest_value-freq))
 
     if to_pandas:
         import pandas as pd
-        return pd.DataFrame({'resonance':r_values,'err':err,'freq':frequencies})
+        return pd.DataFrame({'resonance':r_values,'err':err,'frequency':f_values})
     else:
-        return [tuple(_r) for _r in r_values],np.array(err),np.array(frequencies)
+        return [tuple(_r) for _r in r_values],np.array(err),np.array(f_values)
 #---------------------------------------
 
 #---------------------------------------
