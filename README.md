@@ -2,10 +2,16 @@
 
 **P. Belanger, K. Paraschou et al.**
 
-A Python implementation of the Numerical Analysis of Fundamental Frequencies algorithm (NAFF) from **J. Laskar**. This implementation uses a tailor-made optimizer [`nafflib.optimise.newton_method`, from **A. Bazzani, R. Bartolini & F. Schmidt**] to find the frequencies up to machine precision for tracking data. A Hann window is used to help with the convergence (`nafflib.windowing.hann`).
+A Python implementation of the Numerical Analysis of Fundamental Frequencies algorithm (NAFF [1-2]) from **J. Laskar**. This implementation uses a tailor-made optimizer (`nafflib.optimise.newton_method`, from **A. Bazzani, R. Bartolini & F. Schmidt**) to find the frequencies up to machine precision for tracking data. A Hann window is used to help with the convergence (`nafflib.windowing.hann`).
 
-Documentation to come... An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski, section 11.5: *A Numerical Method: Frequency Map Analysis* (https://www.worldscientific.com/doi/abs/10.1142/9781783262786_0011)
+Documentation to come... An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski [3].
 
+[1] J. Laskar, Introduction to Frequency Map Analysis,  
+ &emsp; https://link.springer.com/content/pdf/10.1007/978-94-011-4673-9_13.pdf  
+[2] J. Laskar et al., The Measure of Chaos by the Numerical Analysis of the Fundamental Frequencies. Application to the Standard Mapping   
+&emsp; https://doi.org/10.1016/0167-2789(92)90028-L   
+[3] A. Wolski,Beam Dynamics in High Energy Particle Accelerators, Section 11.5: *A Numerical Method: Frequency Map Analysis*   
+&emsp; https://www.worldscientific.com/doi/abs/10.1142/9781783262786_0011 
 # Installation
 ```bash
 pip install nafflib
@@ -44,14 +50,14 @@ z = x - 1j*px
 
 # The two following calls are equivalent
 #--------------------------------------------------
-spectrum = harmonics(z,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
-spectrum = harmonics(x,px,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
+spectrum = nafflib.harmonics(z,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
+spectrum = nafflib.harmonics(x,px,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
 #-> where spectrum = (amplitudes,frequencies)
 #--------------------------------------------------
 
 # From position only:
 #--------------------------------------------------
-spectrum = harmonics(x,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
+spectrum = nafflib.harmonics(x,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
 #-> where spectrum = (amplitudes,frequencies)
 #--------------------------------------------------
 
@@ -59,10 +65,9 @@ spectrum = harmonics(x,num_harmonics = 5,window_order = 1,window_type = 'hann',t
 
 ### Categorization of harmonics
 
-For stable motion in quasiperiodic system, the frequencies are expected to come as a linear combinations of the fundamental frequencies (3 for a 6D system). 
+For stable motion sufficiently close to integrable invariants of a conservative system, the frequencies are expected to come as a linear combinations of the fundamental tunes (3 for a 6D system). 
 
-To properly study the spectral lines, the user should almost always try to unambigously identify
-them, since very close spectral lines can be mistaken for one another and **ordering by amplitude will definitely lead to the wrong results**. 
+To properly study the harmonics of a system, the user should almost always try to unambigously identify the spectral lines, since very close lines can be mistaken for one another and **ordering them by amplitude will definitely lead to the wrong results**. 
 
 Such a categorization of the spectral lines can be done for stable motion from a hamiltonian system like the LHC or any standard map by using the linear combination of fundamental frequencies as a unique ID to follow a given spectral line. See for example the `examples/nb_convergence.ipynb` notebook for such an approach.
 
@@ -75,7 +80,7 @@ data  = {'x':x,'px':px,'y':y,'py':py,'zeta':zeta,'pzeta':pzeta}
 Q_vec = [nafflib.tune(data[f'{plane}'],data[f'p{plane}']) for plane in ['x','y','zeta']]
 
 # Let's extract some harmonics
-A,Q = harmonics(x,px,num_harmonics = 5)
+A,Q = nafflib.harmonics(x,px,num_harmonics = 5)
 
 # Let's find the linear combination of fundamental tunes (Q_vec)
 #-----------------
