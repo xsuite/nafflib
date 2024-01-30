@@ -180,7 +180,7 @@ def tune(x,px=None,window_order = 1,window_type = 'hann'):
     amp,freq  = fundamental_frequency(z,N=N,window_order= window_order,
                                             window_type = window_type)
     
-    return np.abs(freq)
+    return freq
 
 
 def harmonics(x,px = None,num_harmonics = 1,window_order = 1,window_type = 'hann',to_pandas = False):
