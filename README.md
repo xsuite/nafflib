@@ -4,7 +4,7 @@
 
 A Python implementation of the Numerical Analysis of Fundamental Frequencies algorithm (NAFF [1-2]) from **J. Laskar**. This implementation uses a tailor-made optimizer (`nafflib.optimise.newton_method`, from **A. Bazzani, R. Bartolini & F. Schmidt**) to find the frequencies up to machine precision for tracking data. A Hann window is used to help with the convergence (`nafflib.windowing.hann`).
 
-Documentation to come... An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski [3].
+An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski [3].
 
 [1] J. Laskar, Introduction to Frequency Map Analysis. https://link.springer.com/content/pdf/10.1007/978-94-011-4673-9_13.pdf  
 [2] J. Laskar et al., The Measure of Chaos by the Numerical Analysis of the Fundamental Frequencies. Application to the Standard Mapping. https://doi.org/10.1016/0167-2789(92)90028-L   
