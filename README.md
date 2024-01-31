@@ -23,18 +23,18 @@ Examples can be found in the `examples` folder. The harmonics of the data are co
 The tune of a signal can be obtained from real or complexe signals as suchs:
 ```python
 # Let's assume the following signal
-z = x - 1j*px
+z = x - 1j * px
 
 # The two following calls are equivalent
-#--------------------------------------------------
-Q = nafflib.tune(z,window_order = 1,window_type = 'hann')
-Q = nafflib.tune(x,px,window_order = 1,window_type = 'hann')
-#--------------------------------------------------
+# --------------------------------------------------
+Q = nafflib.tune(z, window_order=1, window_type="hann")
+Q = nafflib.tune(x, px, window_order=1, window_type="hann")
+# --------------------------------------------------
 
 # Using the position only:
-#--------------------------------------------------
-Q = nafflib.tune(x,window_order = 1,window_type = 'hann')
-#--------------------------------------------------
+# --------------------------------------------------
+Q = nafflib.tune(x, window_order=1, window_type="hann")
+# --------------------------------------------------
 ``` 
 
 ### Harmonics
@@ -43,21 +43,20 @@ Phase space trajectories (x,px),(y,py),(zeta,pzeta) are used to extract the spec
 
 ```python
 # Let's assume the following signal
-z = x - 1j*px
+z = x - 1j * px
 
 # The two following calls are equivalent
-#--------------------------------------------------
-spectrum = nafflib.harmonics(z,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
-spectrum = nafflib.harmonics(x,px,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
-#-> where spectrum = (amplitudes,frequencies)
-#--------------------------------------------------
+# --------------------------------------------------
+spectrum = nafflib.harmonics(z, num_harmonics=5, window_order=1, window_type="hann")
+spectrum = nafflib.harmonics(x, px, num_harmonics=5, window_order=1, window_type="hann")
+# -> where spectrum = (amplitudes,frequencies)
+# --------------------------------------------------
 
 # From position only:
-#--------------------------------------------------
-spectrum = nafflib.harmonics(x,num_harmonics = 5,window_order = 1,window_type = 'hann',to_pandas = False)
-#-> where spectrum = (amplitudes,frequencies)
-#--------------------------------------------------
-
+# --------------------------------------------------
+spectrum = nafflib.harmonics(x, num_harmonics=5, window_order=1, window_type="hann")
+# -> where spectrum = (amplitudes,frequencies)
+# --------------------------------------------------
 ``` 
 
 ### Categorization of harmonics
@@ -71,21 +70,26 @@ Such a categorization of the spectral lines can be done for stable motion from a
 
 ```python
 # Let's assume the following dictionnary of phase space data:
-data  = {'x':x,'px':px,'y':y,'py':py,'zeta':zeta,'pzeta':pzeta}
+data = {"x": x, "px": px, "y": y, "py": py, "zeta": zeta, "pzeta": pzeta}
 
 # Let's extract the fundamental frequencies
-Q_vec = [nafflib.tune(data[f'{plane}'],data[f'p{plane}']) for plane in ['x','y','zeta']]
+Q_vec = [
+    nafflib.tune(data[f"{plane}"], data[f"p{plane}"]) for plane in ["x", "y", "zeta"]
+]
 
 # Let's extract some harmonics
-A,Q = nafflib.harmonics(x,px,num_harmonics = 5)
+A, Q = nafflib.harmonics(x, px, num_harmonics=5)
 
 # Let's find the linear combination of fundamental tunes (Q_vec)
-#-----------------
+# -----------------
 # Note: max_harmonics_order might need to be set to a higher value to find
 #       the proper linear combination of frequencies
-#-----------------
-categorization = nafflib.find_linear_combinations(Q,fundamental_tunes= Q_vec,max_harmonic_order = 10)
-#-> where categorization = (r_vec,err,combined_frequency)
+# -----------------
+categorization = nafflib.find_linear_combinations(
+    Q, fundamental_tunes=Q_vec, max_harmonic_order=10
+)
+# -> where categorization = (r_vec,err,combined_frequency)
+
 ```
 
 

@@ -12,6 +12,9 @@ from pathlib import Path
 
 extensions = []
 
+# LOAD REAME as PyPI description
+with open("README.md","r") as fh:
+    readme = fh.read()
 
 #########
 # Setup #
@@ -27,8 +30,9 @@ setup(
     name='nafflib',
     version=__version__,
     description='nafflib algorith for frequency analysis',
-    long_description=('nafflib algorith for frequency analysis'),
-    #url='https://xsuite.readthedocs.io/',
+    long_description=readme,
+    long_description_content_type='text/markdown',
+    url='https://github.com/xsuite/nafflib',
     packages=find_packages(),
     ext_modules=extensions,
     include_package_data=True,
