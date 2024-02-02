@@ -160,7 +160,7 @@ def parse_real_signal(amplitudes, frequencies, conjugate_tol=1e-10, to_pandas=Fa
 
 # ---------------------------------------
 def find_linear_combinations(
-    frequencies, fundamental_tunes=[], max_harmonic_order=10, to_pandas=False
+    frequencies, fundamental_tunes=[], max_harmonic_order=10, r_vec=None, to_pandas=False
 ):
     """
     Identifies linear combinations of fundamental tunes that closely match the given frequencies.
@@ -173,6 +173,8 @@ def find_linear_combinations(
         List of fundamental tunes for resonance analysis. Length can be 1, 2, or 3.
     max_harmonic_order : int, optional
         Maximum order of harmonics to consider.
+    r_vec : list of ndarrays, optional
+        List of arrays representing the possible combinations of the fundamental tunes. If not provided, it is generated. (for big arrays, it is better to provide it to avoid memory issues when looping)
     to_pandas : bool, optional
         If True, returns a pandas DataFrame; otherwise, returns lists and an array.
 
@@ -190,17 +192,20 @@ def find_linear_combinations(
 
     # Create a 3D array of all possible combinations of r_vec
     idx = max_harmonic_order
-    if len(fundamental_tunes) == 1:
-        r1, r2 = np.mgrid[-idx : idx + 1, -idx : idx + 1]
-        r_vec = [r1, r2]
-    elif len(fundamental_tunes) == 2:
-        r1, r2, r3 = np.mgrid[-idx : idx + 1, -idx : idx + 1, -idx : idx + 1]
-        r_vec = [r1, r2, r3]
+    if r_vec is None:
+        if len(fundamental_tunes) == 1:
+            r1, r2 = np.mgrid[-idx : idx + 1, -idx : idx + 1]
+            r_vec = [r1, r2]
+        elif len(fundamental_tunes) == 2:
+            r1, r2, r3 = np.mgrid[-idx : idx + 1, -idx : idx + 1, -idx : idx + 1]
+            r_vec = [r1, r2, r3]
+        else:
+            r1, r2, r3, r4 = np.mgrid[
+                -idx : idx + 1, -idx : idx + 1, -idx : idx + 1, -idx : idx + 1
+            ]
+            r_vec = [r1, r2, r3, r4]
     else:
-        r1, r2, r3, r4 = np.mgrid[
-            -idx : idx + 1, -idx : idx + 1, -idx : idx + 1, -idx : idx + 1
-        ]
-        r_vec = [r1, r2, r3, r4]
+        assert len(r_vec) == len(fundamental_tunes) + 1, "r_vec must be of length fundamental_tunes+1"
 
     # Computing all linear combinations of r1*Qx + r2*Qy + r3*Qz + m
     Q_vec = fundamental_tunes + [1]

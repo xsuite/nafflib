@@ -5,6 +5,7 @@ from .naff import (
     fundamental_frequency,
     _fft_f0_estimate,
     multiparticle_tunes,
+    multiparticle_harmonics,
 )
 from .toolbox import (
     find_linear_combinations,

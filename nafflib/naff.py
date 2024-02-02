@@ -289,3 +289,45 @@ def multiparticle_tunes(x, px=None, window_order=1, window_type="hann"):
         )
 
     return freq_i
+
+
+def multiparticle_harmonics(x, px=None, num_harmonics=1, window_order=1, window_type="hann"):
+    """
+    Calculates the harmonics for multiple particles given their positions and optionally their momenta.
+
+    Parameters
+    ----------
+    x : ndarray or list of ndarray
+        An array or a list of arrays containing the position data of each particle.
+    px : ndarray or list of ndarray, optional
+        An array or a list of arrays containing the momentum data of each particle.
+        If None, only position data is used. Defaults to None.
+    window_order : int, optional
+        The order of the windowing function used in frequency analysis. Defaults to 1.
+    window_type : str, optional
+        The type of windowing function to apply. Defaults to 'hann'.
+
+    Returns
+    -------
+    amplitudes,frequencies : tuple or DataFrame
+        A list containing the computed harmonics for each particle.
+    """
+    n_particles = np.shape(x)[0]
+
+    # Initializating px
+    # --------------------
+    if px is None:
+        px = n_particles * [None]
+    # --------------------
+
+    freq_i = []
+    amp_i  = []
+    for _x,_px in zip(x,px):
+        _A,_Q = harmonics(
+            _x,_px, num_harmonics=num_harmonics, window_order=window_order, window_type=window_type
+        )
+        amp_i.append(_A)
+        freq_i.append(_Q)
+        
+
+    return np.array(amp_i),np.array(freq_i)

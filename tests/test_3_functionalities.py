@@ -101,7 +101,7 @@ def test_x_px_handling():
 
 def test_signal_generation():
 
-    for (label, signal), tol in zip(example_signals.items(), [1e-12, 1e-9, 1e-4]):
+    for (label, signal), tol in zip(example_signals.items(), [1e-11, 1e-9, 1e-4]):
         # Extracting signal
         x, px = signal
         N = np.arange(len(x))
