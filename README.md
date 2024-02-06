@@ -1,90 +1,98 @@
-# NAFFlib
-Authors:  
-* **Sofia Kostoglou**  
-* **Konstantinos Paraschou**
-* **Dario Pellegrini** 
+# nafflib
 
-Maintained by **Konstantinos Paraschou**.
+**P. Belanger, K. Paraschou, G. Sterbini, G. Iadarola et al.**
 
-NAFFlib is a library written in C and wrapped in 
-Python which includes an implementation of the NAFF 
-algorithm. 
-[[1]](https://www.sciencedirect.com/science/article/pii/001910359090084M) 
-[[2]](http://jacow.org/ipac2017/papers/thpab044.pdf)
+A Python implementation of the Numerical Analysis of Fundamental Frequencies algorithm (NAFF [1-2]) from **J. Laskar**. This implementation uses a tailor-made optimizer (`nafflib.optimise.newton_method`, from **A. Bazzani, R. Bartolini & F. Schmidt**) to find the frequencies up to machine precision for tracking data. A Hann window is used to help with the convergence (`nafflib.windowing.hann`).
 
-## Installation
-### Automatic
-```
-$ pip install NAFFlib
-```
-Depending on the OS, you might need to 
-```
-$ pip3 install NAFFlib
-```
-for Python3 support.
+An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski [3].
 
-### Local Installation
-```
-$ git clone git@github.com:PyCOMPLETE/NAFFlib.git
-$ cd NAFFlib
-$ make
-$ cd ..
-```
-to compile NAFFlib_c.so (Python3) and NAFFlib2_c.so (Python2) shared objects.
-If either of Python2 or Python3 is not supported in the OS, the line
-```
-$ make
-```
-should be replaced with either
-```
-$ make py2
-```
-for Python2 support or
-```
-$ make py3
-```
-for Python3 support.
-
-***
-The NAFFlib module can be imported by:
-
-```
-import NAFFlib
+[1] J. Laskar, Introduction to Frequency Map Analysis. http://link.springer.com/10.1007/978-94-011-4673-9_13  
+[2] J. Laskar et al., The Measure of Chaos by the Numerical Analysis of the Fundamental Frequencies. Application to the Standard Mapping. https://doi.org/10.1016/0167-2789(92)90028-L   
+[3] A. Wolski,Beam Dynamics in High Energy Particle Accelerators, Section 11.5: *A Numerical Method: Frequency Map Analysis*. https://www.worldscientific.com/doi/abs/10.1142/9781783262786_0011 
+# Installation
+```bash
+pip install nafflib
 ```
 
-### Functions in NAFFlib:
-1. ```q = NAFFlib.get_tune(x, order, interpolation)```
-where:  
-- ```x``` is the (complex or real) input signal in the form of a one-dimensional non-empty numpy array.
-- ```order``` is the value of the Hann's window order parameter to be used with 0 corresponding to no window. This variable is optional and its default value is equal to 2.
-- ```interpolation``` is a boolean variable denoting whether the 7-point Newton-Cotes integration rule should be used. This variable is optional and its default value is equal to 0. It is not recommended that this is set 1.
-
-returns the single positive frequency ```q``` that is dominant in the Fourier spectrum.
+# Usage
+Examples can be found in the `examples` folder. The harmonics of the data are computed using position-momentum data and the order of the window can be specified by the user. Altough the algorithm works with position-only data, the use of position-momentum is preferred if possible. 
 
 
-2. ```Q, A, B = NAFFlib.get_tunes(x, N, order, interpolation)```
-where:  
-- ```x``` is the (complex or real) input signal in the form of a one-dimensional non-empty numpy array.
-- ```N``` is the number of frequencies to be found in the signal. This variable is optional and by default is set to 1.
-- ```order``` is the value of the Hann's window order parameter to be used with 0 corresponding to no window. This variable is optional and its default value is equal to 2.
-- ```interpolation``` is a boolean variable denoting whether the 7-point Newton-Cotes integration rule should be used. This variable is optional and its default value is equal to 0. It is not recommended that this is set 1.
 
-returns three one-dimensional numpy arrays ```Q, A, B``` of size N with the first (being real-valued) containing the most dominant positive frequencies in the Fourier spectrum, the second containing the complex-valued amplitudes of the corresponding frequency and the third containing the complex-valued amplitudes of the negative of the corresponding frequency. It is recommended that this function is used with a real-valued input where the Fourier power spectrum is guaranteed to be an even function.
+### Tune
+The tune of a signal can be obtained from real or complexe signals as suchs:
+```python
+# Let's assume the following signal
+z = x - 1j * px
+
+# The two following calls are equivalent
+# --------------------------------------------------
+Q = nafflib.tune(z, window_order=1, window_type="hann")
+Q = nafflib.tune(x, px, window_order=1, window_type="hann")
+# --------------------------------------------------
+
+# Using the position only:
+# --------------------------------------------------
+Q = nafflib.tune(x, window_order=1, window_type="hann")
+# --------------------------------------------------
+``` 
+
+### Harmonics
+ 
+Phase space trajectories (x,px),(y,py),(zeta,pzeta) are used to extract the spectral lines of the signal plane-by-plane with the `harmonics()` function. The number of harmonics is specified with the `num_harmonics` argument. Again, the function can be used with position only or position-momentum (preferred) information.
+
+```python
+# Let's assume the following signal
+z = x - 1j * px
+
+# The two following calls are equivalent
+# --------------------------------------------------
+spectrum = nafflib.harmonics(z, num_harmonics=5, window_order=1, window_type="hann")
+spectrum = nafflib.harmonics(x, px, num_harmonics=5, window_order=1, window_type="hann")
+# -> where spectrum = (amplitudes,frequencies)
+# --------------------------------------------------
+
+# From position only:
+# --------------------------------------------------
+spectrum = nafflib.harmonics(x, num_harmonics=5, window_order=1, window_type="hann")
+# -> where spectrum = (amplitudes,frequencies)
+# --------------------------------------------------
+``` 
+
+### Categorization of harmonics
+
+For stable motion sufficiently close to integrable invariants of a conservative system, the frequencies are expected to come as a linear combinations of the fundamental tunes (3 for a 6D system). 
+
+To properly study the harmonics of a system, the user should almost always try to unambigously identify the spectral lines, since very close lines can be mistaken for one another and **ordering them by amplitude will definitely lead to the wrong results**. 
+
+Such a categorization of the spectral lines can be done for stable motion from a hamiltonian system like the LHC or any standard map by using the linear combination of fundamental frequencies as a unique ID to follow a given spectral line. See for example the `examples/nb_convergence.ipynb` notebook for such an approach and the `examples/ex_04_regularity_4D.py` for an example of the problems which can arise when ordering spectral lines by amplitude.
 
 
-3. ```Q, A = NAFFlib.get_tunes_all(x, N, order, interpolation)```
-where:  
-- ```x``` is the (complex or real) input signal in the form of a one-dimensional non-empty numpy array.
-- ```N``` is the number of frequencies to be found in the signal. This variable is optional and by default is set to 1.
-- ```order``` is the value of the Hann's window order parameter to be used with 0 corresponding to no window. This variable is optional and its default value is equal to 2.
-- ```interpolation``` is a boolean variable denoting whether the 7-point Newton-Cotes integration rule should be used. This variable is optional and its default value is equal to 0. It is not recommended that this is set 1.
+```python
+# Let's assume the following dictionnary of phase space data:
+data = {"x": x, "px": px, "y": y, "py": py, "zeta": zeta, "pzeta": pzeta}
 
-returns two one-dimensional numpy arrays ```Q, A``` of size ```N``` with the first (being real-valued) containing the most dominant (positive or negative) frequencies in the Fourier spectrum and the second containing the complex-valued amplitudes of the corresponding frequency. It is recommended that this function is used with a complex-valued input where the Fourier power spectrum is not necessarily an even function. It should be emphasized that *positive and negative frequencies are treated separately*. 
+# Let's extract the fundamental frequencies
+Q_vec = [
+    nafflib.tune(data[f"{plane}"], data[f"p{plane}"]) for plane in ["x", "y", "zeta"]
+]
 
-4. ```Q = NAFFlib.multiparticle_tunes(x, order, interpolation)```
-where:  
-- ```x``` is an array of (complex or real) input signals in the form of a two-dimensional non-empty numpy array. The first axis should correspond to the id of each different track while the second axis should correspond to the turn number.
-- ```order``` is the value of the Hann's window order parameter to be used with 0 corresponding to no window. This variable is optional and its default value is equal to 2.
-- ```interpolation``` is a boolean variable denoting whether the 7-point Newton-Cotes integration rule should be used. This variable is optional and its default value is equal to 0. It is not recommended that this is set 1.
+# Let's extract some harmonics
+A, Q = nafflib.harmonics(x, px, num_harmonics=5)
 
-returns a one-dimensional numpy array ```Q``` of size ```len(x)``` which contains the single most dominant frequency of the different tracks. 
+# Let's find the linear combination of fundamental tunes (Q_vec)
+# -----------------
+# Note: max_harmonics_order might need to be set to a higher value to find
+#       the proper linear combination of frequencies
+# -----------------
+categorization = nafflib.find_linear_combinations(
+    Q, fundamental_tunes=Q_vec, max_harmonic_order=10
+)
+# -> where categorization = (r_vec,err,combined_frequency)
+
+```
+
+
+
+
+

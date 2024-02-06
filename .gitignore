@@ -1,5 +1,13 @@
-!*.*
-!*/
-object
-*.swp
+
+*.ipynb_checkpoint*
+*__pycache*
+*.c
+*.o
+*.json
+*.DS_Store
 *.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*cpython*
+*.tar.*

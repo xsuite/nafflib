@@ -1,38 +1,54 @@
-from setuptools import setup, Extension, find_packages
-import sys
-import numpy as np
+# copyright ############################### #
+# Copyright (c) CERN, 2024.                 #
+# ######################################### #
 
-if sys.version_info[0] < 3:
-    extension_name = "NAFFlib/NAFFlib2_c"
-else:
-    extension_name = "NAFFlib/NAFFlib_c"
+from setuptools import setup, find_packages, Extension
+from pathlib import Path
 
+#######################################
+# Prepare list of compiled extensions #
+#######################################
+
+extensions = []
+
+# LOAD REAME as PyPI description
 with open("README.md","r") as fh:
-    long_description = fh.read()
+    readme = fh.read()
 
-module = Extension(extension_name,
-                   ["NAFFlib/source/brent.c",
-                    "NAFFlib/source/fft.c",
-                    "NAFFlib/source/frequency.c",
-                    "NAFFlib/source/pynafflib.c",
-                    "NAFFlib/source/signal_processing.c",
-                    "NAFFlib/source/windows.c",
-                   ],
-                   include_dirs=["NAFFlib/include", np.get_include()],
-                   extra_compile_args=["-std=c99"]
-                  )
+#########
+# Setup #
+#########
+
+version_file = Path(__file__).parent / 'nafflib/_version.py'
+dd = {}
+with open(version_file.absolute(), 'r') as fp:
+    exec(fp.read(), dd)
+__version__ = dd['__version__']
 
 setup(
-    name="NAFFlib",
-    version="1.0.2",
-    author="Konstantinos Paraschou",
-    author_email="konstantinos.paraschou@cern.ch",
-    description="A Python-wrapped C library which implements the NAFF algorithm",
-    long_description=long_description,
+    name='nafflib',
+    version=__version__,
+    description='nafflib algorith for frequency analysis',
+    long_description=readme,
     long_description_content_type='text/markdown',
-    url="https://github.com/PyCOMPLETE/NAFFlib",
+    url='https://github.com/xsuite/nafflib',
     packages=find_packages(),
-    license = 'LGPLv2.1',
-    keywords = 'frequency analysis naff',
-    ext_modules=[module]
-)
+    ext_modules=extensions,
+    include_package_data=True,
+    install_requires=[
+        'numpy>=1.0',
+        'pandas',
+        'numba'
+        ],
+    author='P. Belanger, K. Paraschou et al.',
+    license='Apache 2.0',
+    download_url="https://pypi.python.org/pypi/nafflib",
+    project_urls={
+            "Bug Tracker": "https://github.com/xsuite/xsuite/issues",
+            # "Documentation": 'https://xsuite.readthedocs.io/',
+            "Source Code": "https://github.com/xsuite/nafflib",
+        },
+    extras_require={
+        'tests': ['pytest'],
+        },
+    )
