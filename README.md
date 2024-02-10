@@ -27,13 +27,13 @@ z = x - 1j * px
 
 # The two following calls are equivalent
 # --------------------------------------------------
-Q = nafflib.tune(z, window_order=1, window_type="hann")
-Q = nafflib.tune(x, px, window_order=1, window_type="hann")
+Q = nafflib.tune(z, window_order=2, window_type="hann")
+Q = nafflib.tune(x, px, window_order=2, window_type="hann")
 # --------------------------------------------------
 
 # Using the position only:
 # --------------------------------------------------
-Q = nafflib.tune(x, window_order=1, window_type="hann")
+Q = nafflib.tune(x, window_order=2, window_type="hann")
 # --------------------------------------------------
 ``` 
 
@@ -47,14 +47,14 @@ z = x - 1j * px
 
 # The two following calls are equivalent
 # --------------------------------------------------
-spectrum = nafflib.harmonics(z, num_harmonics=5, window_order=1, window_type="hann")
-spectrum = nafflib.harmonics(x, px, num_harmonics=5, window_order=1, window_type="hann")
+spectrum = nafflib.harmonics(z, num_harmonics=5, window_order=2, window_type="hann")
+spectrum = nafflib.harmonics(x, px, num_harmonics=5, window_order=2, window_type="hann")
 # -> where spectrum = (amplitudes,frequencies)
 # --------------------------------------------------
 
 # From position only:
 # --------------------------------------------------
-spectrum = nafflib.harmonics(x, num_harmonics=5, window_order=1, window_type="hann")
+spectrum = nafflib.harmonics(x, num_harmonics=5, window_order=2, window_type="hann")
 # -> where spectrum = (amplitudes,frequencies)
 # --------------------------------------------------
 ``` 
