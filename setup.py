@@ -28,7 +28,7 @@ __version__ = dd['__version__']
 setup(
     name='nafflib',
     version=__version__,
-    description='nafflib algorith for frequency analysis',
+    description='NAFF algorithm for frequency analysis',
     long_description=readme,
     long_description_content_type='text/markdown',
     url='https://github.com/xsuite/nafflib',

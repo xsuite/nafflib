@@ -16,5 +16,5 @@ echo "Releasing $NAME v$VER on PyPI"
 echo "========================================================================"
 
 python setup.py sdist
-twine upload dist/*
+twine upload dist/* --verbose --repository nafflib
 rm -r dist/ *.egg-info

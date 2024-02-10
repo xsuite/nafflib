@@ -38,7 +38,7 @@ def _fft_f0_estimate(z, force_len=None):
     return tune_est, resolution
 
 
-def fundamental_frequency(z, N=None, window_order=1, window_type="hann"):
+def fundamental_frequency(z, N=None, window_order=2, window_type="hann"):
     """
     Finds the fundamental frequency of a signal using the NAFF algorithm. It applies a window,
     estimates the frequency using FFT, and then refines it with the Newton method.
@@ -50,7 +50,7 @@ def fundamental_frequency(z, N=None, window_order=1, window_type="hann"):
     N : ndarray or None, optional
         The array of turn numbers. If None, it defaults to a range equal to the length of z.
     window_order : int, optional
-        The order of the windowing function.
+        The order of the windowing function. Defaults to 2.
     window_type : str, optional
         The type of windowing function to use. Defaults to 'hann'.
 
@@ -86,7 +86,7 @@ def fundamental_frequency(z, N=None, window_order=1, window_type="hann"):
     return amplitude, f0
 
 
-def naff(z, num_harmonics=1, window_order=1, window_type="hann", to_pandas=False):
+def naff(z, num_harmonics=1, window_order=2, window_type="hann"):
     """
     Applies the NAFF algorithm to find spectral lines of a signal. It identifies multiple harmonics
     of the signal, removes them, and repeats the process.
@@ -98,11 +98,9 @@ def naff(z, num_harmonics=1, window_order=1, window_type="hann", to_pandas=False
     num_harmonics : int, optional
         The number of harmonics to identify in the signal.
     window_order : int, optional
-        The order of the windowing function.
+        The order of the windowing function. Defaults to 2.
     window_type : str, optional
         The type of windowing function to use. Defaults to 'hann'.
-    to_pandas : bool, optional
-        If True, returns a pandas DataFrame; otherwise, returns two arrays.
 
     Returns
     -------
@@ -135,15 +133,10 @@ def naff(z, num_harmonics=1, window_order=1, window_type="hann", to_pandas=False
         zgs = amp * np.exp(2 * np.pi * 1j * freq * N)
         _z -= zgs
 
-    if to_pandas:
-        import pandas as pd
-
-        return pd.DataFrame({"amplitude": amplitudes, "frequency": frequencies})
-    else:
-        return np.array(amplitudes), np.array(frequencies)
+    return np.array(amplitudes), np.array(frequencies)
 
 
-def tune(x, px=None, window_order=1, window_type="hann"):
+def tune(x, px=None, window_order=2, window_type="hann"):
     """
     Computes the tune (fundamental frequency) of a signal or a complex signal formed from x and px.
 
@@ -154,7 +147,7 @@ def tune(x, px=None, window_order=1, window_type="hann"):
     px : ndarray, optional
         The imaginary part of the complex signal, if any. If None, x is treated as the full signal.
     window_order : int, optional
-        The order of the windowing function.
+        The order of the windowing function. Defaults to 2.
     window_type : str, optional
         The type of windowing function to use. Defaults to 'hann'.
 
@@ -166,27 +159,44 @@ def tune(x, px=None, window_order=1, window_type="hann"):
     # initialisation
     # ---------------------
     if px is not None:
+        real_signal = False
         x, px = np.asarray(x), np.asarray(px)
         z = x - 1j * px
     else:
         if np.any(np.imag(np.asarray(x)) != 0):
-            # x is complex!
+            real_signal = False
             z = x
         else:
+            real_signal = True
             x, px = np.asarray(x), 0
             z = x - 1j * px
-    N = np.arange(len(z))
     # ---------------------
 
-    amp, freq = fundamental_frequency(
-        z, N=N, window_order=window_order, window_type=window_type
-    )
+    # FOR COMPLEX SIGNAL:
+    # ---------------------
+    if not real_signal:
+        N = np.arange(len(z))
+        amp, freq = fundamental_frequency(
+            z, N=N, window_order=window_order, window_type=window_type
+        )
 
+    # FOR REAL SIGNAL:
+    # ---------------------
+    else:
+        # Looking for 2n+1 many frequencies (for DC) then parsing the complex conjugates
+        amplitudes, frequencies = naff(
+            z,
+            num_harmonics=2 * 1 + 1,
+            window_order=window_order,
+            window_type=window_type,
+        )
+        amps, freqs = parse_real_signal(amplitudes, frequencies)
+        freq = freqs[0]
     return freq
 
 
 def harmonics(
-    x, px=None, num_harmonics=1, window_order=1, window_type="hann", to_pandas=False
+    x, px=None, num_harmonics=1, window_order=2, window_type="hann", to_pandas=False
 ):
     """
     Identifies harmonics in a signal or a complex signal formed from x and px using the NAFF algorithm.
@@ -200,7 +210,7 @@ def harmonics(
     num_harmonics : int, optional
         The number of harmonics to identify in the signal.
     window_order : int, optional
-        The order of the windowing function.
+        The order of the windowing function. Defaults to 2.
     window_type : str, optional
         The type of windowing function to use. Defaults to 'hann'.
     to_pandas : bool, optional
@@ -230,29 +240,37 @@ def harmonics(
     # FOR COMPLEX SIGNAL:
     # ---------------------
     if not real_signal:
-        return naff(
+        amplitudes, frequencies = naff(
             z,
             num_harmonics=num_harmonics,
             window_order=window_order,
             window_type=window_type,
-            to_pandas=to_pandas,
         )
 
     # FOR REAL SIGNAL:
     # ---------------------
     else:
-        # Looking for twice as many frequencies then parsing the complex conjugates
+        # Looking for 2n+1 many frequencies (for DC) then parsing the complex conjugates
         amplitudes, frequencies = naff(
             z,
-            num_harmonics=2 * num_harmonics,
+            num_harmonics=2 * num_harmonics + 1,
             window_order=window_order,
             window_type=window_type,
         )
+        amplitudes, frequencies = parse_real_signal(amplitudes, frequencies)
+        amplitudes = amplitudes[:num_harmonics]
+        frequencies = frequencies[:num_harmonics]
 
-        return parse_real_signal(amplitudes, frequencies, to_pandas=to_pandas)
+    # Final handling for pandas
+    if to_pandas:
+        import pandas as pd
+
+        return pd.DataFrame({"amplitude": amplitudes, "frequency": frequencies})
+    else:
+        return amplitudes, frequencies
 
 
-def multiparticle_tunes(x, px=None, window_order=1, window_type="hann"):
+def multiparticle_tunes(x, px=None, window_order=2, window_type="hann"):
     """
     Calculates the tunes for multiple particles given their positions and optionally their momenta.
     This function computes the fundamental frequency for each particle individually.
@@ -265,7 +283,7 @@ def multiparticle_tunes(x, px=None, window_order=1, window_type="hann"):
         An array or a list of arrays containing the momentum data of each particle.
         If None, only position data is used. Defaults to None.
     window_order : int, optional
-        The order of the windowing function used in frequency analysis. Defaults to 1.
+        The order of the windowing function used in frequency analysis. Defaults to 2.
     window_type : str, optional
         The type of windowing function to apply. Defaults to 'hann'.
 
@@ -291,7 +309,9 @@ def multiparticle_tunes(x, px=None, window_order=1, window_type="hann"):
     return freq_i
 
 
-def multiparticle_harmonics(x, px=None, num_harmonics=1, window_order=1, window_type="hann"):
+def multiparticle_harmonics(
+    x, px=None, num_harmonics=1, window_order=2, window_type="hann"
+):
     """
     Calculates the harmonics for multiple particles given their positions and optionally their momenta.
 
@@ -303,7 +323,7 @@ def multiparticle_harmonics(x, px=None, num_harmonics=1, window_order=1, window_
         An array or a list of arrays containing the momentum data of each particle.
         If None, only position data is used. Defaults to None.
     window_order : int, optional
-        The order of the windowing function used in frequency analysis. Defaults to 1.
+        The order of the windowing function used in frequency analysis. Defaults to 2.
     window_type : str, optional
         The type of windowing function to apply. Defaults to 'hann'.
 
@@ -321,13 +341,16 @@ def multiparticle_harmonics(x, px=None, num_harmonics=1, window_order=1, window_
     # --------------------
 
     freq_i = []
-    amp_i  = []
-    for _x,_px in zip(x,px):
-        _A,_Q = harmonics(
-            _x,_px, num_harmonics=num_harmonics, window_order=window_order, window_type=window_type
+    amp_i = []
+    for _x, _px in zip(x, px):
+        _A, _Q = harmonics(
+            _x,
+            _px,
+            num_harmonics=num_harmonics,
+            window_order=window_order,
+            window_type=window_type,
         )
         amp_i.append(_A)
         freq_i.append(_Q)
-        
 
-    return np.array(amp_i),np.array(freq_i)
+    return np.array(amp_i), np.array(freq_i)

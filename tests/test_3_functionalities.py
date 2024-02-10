@@ -27,6 +27,8 @@ def test_parse_complex():
         spectrum_z = nafflib.harmonics(
             z, num_harmonics=2 * n_harm, window_order=2, window_type="hann"
         )
+        assert len(spectrum_z[1]) == 2 * n_harm, "Too few harmonics found for z"
+
         r_z, _, _ = nafflib.find_linear_combinations(
             spectrum_z[1], fundamental_tunes=[spectrum_z[1][0]]
         )
@@ -35,6 +37,8 @@ def test_parse_complex():
         spectrum_x = nafflib.harmonics(
             x, num_harmonics=n_harm, window_order=2, window_type="hann"
         )
+        assert len(spectrum_x[1]) == n_harm, "Too few harmonics found for x"
+
         r_x, _, _ = nafflib.find_linear_combinations(
             spectrum_x[1], fundamental_tunes=[spectrum_x[1][0]]
         )
@@ -71,6 +75,7 @@ def test_x_px_handling():
         spectrum_x_px = nafflib.harmonics(
             x, px, num_harmonics=2 * n_harm, window_order=2, window_type="hann"
         )
+        assert len(spectrum_x_px[1]) == 2 * n_harm, "Too few harmonics found for x-px"
         r_x_px, _, _ = nafflib.find_linear_combinations(
             spectrum_x_px[1], fundamental_tunes=[spectrum_x_px[1][0]]
         )
@@ -79,6 +84,7 @@ def test_x_px_handling():
         spectrum_x = nafflib.harmonics(
             x, num_harmonics=n_harm, window_order=2, window_type="hann"
         )
+        assert len(spectrum_x[1]) == n_harm, "Too few harmonics found for x"
         r_x, _, _ = nafflib.find_linear_combinations(
             spectrum_x[1], fundamental_tunes=[spectrum_x[1][0]]
         )
@@ -189,3 +195,56 @@ def test_linear_combinations():
         assert np.all(
             err < tol * 10
         ), f"Frequencies found don't match for particle@{label}"
+
+
+# 4D Henon
+# Henon parameters:
+# ------------
+num_turns = int(1000)
+
+coupling = 0.1
+Qx_list = [0.2064898024701758, (3 - np.sqrt(5)) / 2]
+Qy = np.sqrt(2) - 1
+
+x_points = np.linspace(0.1, 0.5, 10)
+px_point = 0.35 * x_points
+# ------------
+
+# Generating example signal
+# =====================
+example_signals_4D = {}
+for Qx in Qx_list:
+    for _i, (x0, px0) in enumerate(zip(x_points, px_point)):
+        # Tracking
+        x, px, y, py = nafflib.henon_map_4D(
+            x0, px0, x0, px0, Qx=Qx, Qy=Qy, coupling=coupling, num_turns=num_turns
+        )
+
+        # Saving in a dict
+        data = {"x": x, "px": px, "y": y, "py": py}
+        example_signals_4D[(Qx, Qy, coupling, f"part_{_i}")] = data
+# =====================
+
+
+def test_real_signal_tune():
+    for w_order in [0, 1, 2, 3, 4]:
+        for label, dct_signal in example_signals_4D.items():
+            Q_vec = []
+            for plane in ["x", "y"]:
+                _Q = nafflib.tune(dct_signal[plane], window_order=w_order)
+                Q_vec.append(_Q)
+
+            Q_vec_z = []
+            for plane in ["x", "y"]:
+                _Q = nafflib.tune(
+                    dct_signal[plane], dct_signal[f"p{plane}"], window_order=w_order
+                )
+                Q_vec_z.append(_Q)
+
+            assert np.all(
+                np.array(Q_vec) > 0
+            ), f"Negative tune detected despite real signal @ {label} and window_order={w_order}"
+
+            assert np.allclose(
+                np.abs(Q_vec), np.abs(Q_vec_z), atol=1e-5, rtol=0
+            ), f"Tune difference too large between x-only and x-px @ {label} and window_order={w_order}"

@@ -87,7 +87,7 @@ def henon_map_4D(x, px, y, py, Qx, Qy, coupling, num_turns):
 
 
 # ---------------------------------------
-def parse_real_signal(amplitudes, frequencies, conjugate_tol=1e-10, to_pandas=False):
+def parse_real_signal(amplitudes, frequencies, rel_conjugate_tol=1e-2):
     """
     Parses a real signal from its complex representation, identifying and handling complex conjugates.
 
@@ -97,10 +97,8 @@ def parse_real_signal(amplitudes, frequencies, conjugate_tol=1e-10, to_pandas=Fa
         Amplitudes of the complex signal.
     frequencies : ndarray
         Frequencies of the complex signal.
-    conjugate_tol : float, optional
-        Tolerance for identifying complex conjugates. Defaults to 1e-10.
-    to_pandas : bool, optional
-        If True, returns a pandas DataFrame; otherwise, returns two arrays.
+    rel_conjugate_tol : float, optional
+        Relative tolerance for identifying complex conjugates: remainder/norm. Default is 1e-2.
 
     Returns
     -------
@@ -115,15 +113,21 @@ def parse_real_signal(amplitudes, frequencies, conjugate_tol=1e-10, to_pandas=Fa
     amp = []
 
     for i in range(len(Q) - 1):
-
-        # Finding closest conjugate pair
-        comparisons = phasors[i] + phasors
-        pair_idx = np.argmin(np.abs(np.imag(comparisons)))
+        # Finding closest conjugate pair (comparison should be zero: z + z* = 2*Re(z))
+        comparisons = np.abs((phasors[i] + phasors) - (2 * np.real(phasors[i])))
+        # The frequency should at least be of opposite sign!
+        comparisons[Q * Q[i] > 0] = np.inf
+        # Make comparison relative with respect to the phasor under inspection
+        comparisons = comparisons / np.abs(phasors[i])
+        # --
+        pair_idx = np.argmin(comparisons)
         pair_A = np.array([A[i], A[pair_idx]])
         pair_Q = np.array([Q[i], Q[pair_idx]])
+        # --
 
-        # Check if the pair is a complex conjugate, otherwise both freqs are kept
-        if np.abs(np.diff(np.abs(pair_Q)))[0] > conjugate_tol:
+        # Check if the pair is a complex conjugate, otherwise both freqs
+        # will make it out of the loop
+        if comparisons[pair_idx] > rel_conjugate_tol:
             freq.append(Q[i])
             amp.append(A[i])
             continue
@@ -136,7 +140,7 @@ def parse_real_signal(amplitudes, frequencies, conjugate_tol=1e-10, to_pandas=Fa
         if pair_Q[0] == pair_Q[1]:
             # the pair is a copy of itself (DC signal case)
             freq.append(pair_Q[0])
-            amp.append(real + 1j * imag)
+            amp.append(pair_A[0])
         else:
             # Complex conjugate found, adding only once
             if np.mean(np.abs(pair_Q)) not in freq:
@@ -147,12 +151,7 @@ def parse_real_signal(amplitudes, frequencies, conjugate_tol=1e-10, to_pandas=Fa
                     freq.append(np.mean(np.abs(pair_Q)))
                     amp.append(2 * (real + sign[0] * 1j * imag))
 
-    if to_pandas:
-        import pandas as pd
-
-        return pd.DataFrame({"amplitude": amp, "frequency": freq})
-    else:
-        return np.array(amp), np.array(freq)
+    return np.array(amp), np.array(freq)
 
 
 # ---------------------------------------
@@ -160,7 +159,11 @@ def parse_real_signal(amplitudes, frequencies, conjugate_tol=1e-10, to_pandas=Fa
 
 # ---------------------------------------
 def find_linear_combinations(
-    frequencies, fundamental_tunes=[], max_harmonic_order=10, r_vec=None, to_pandas=False
+    frequencies,
+    fundamental_tunes=[],
+    max_harmonic_order=10,
+    r_vec=None,
+    to_pandas=False,
 ):
     """
     Identifies linear combinations of fundamental tunes that closely match the given frequencies.
@@ -183,7 +186,7 @@ def find_linear_combinations(
     r_values,error,f_values : DataFrame or tuple
         Resonance values, errors, and corresponding frequencies, either as a DataFrame or separate data structures.
     """
-
+    fundamental_tunes = list(fundamental_tunes)
     assert len(fundamental_tunes) in [
         1,
         2,
@@ -205,7 +208,9 @@ def find_linear_combinations(
             ]
             r_vec = [r1, r2, r3, r4]
     else:
-        assert len(r_vec) == len(fundamental_tunes) + 1, "r_vec must be of length fundamental_tunes+1"
+        assert (
+            len(r_vec) == len(fundamental_tunes) + 1
+        ), "r_vec must be of length fundamental_tunes+1"
 
     # Computing all linear combinations of r1*Qx + r2*Qy + r3*Qz + m
     Q_vec = fundamental_tunes + [1]
