@@ -2,7 +2,76 @@ import numpy as np
 
 from .windowing import hann
 from .optimize import newton_method
-from .toolbox import parse_real_signal
+
+
+
+
+
+def _parse_real_signal(amplitudes, frequencies, rel_conjugate_tol=1e-2):
+    """
+    Parses a real signal from its complex representation, identifying and handling complex conjugates.
+
+    Parameters
+    ----------
+    amplitudes : ndarray
+        Amplitudes of the complex signal.
+    frequencies : ndarray
+        Frequencies of the complex signal.
+    rel_conjugate_tol : float, optional
+        Relative tolerance for identifying complex conjugates: remainder/norm. Default is 1e-2.
+
+    Returns
+    -------
+    amplitudes,frequencies : DataFrame or tuple of ndarray
+        Amplitudes and frequencies of the real signal components, either as a DataFrame or as two arrays.
+    """
+
+    A, Q = amplitudes, frequencies
+    phasors = A * np.exp(2 * np.pi * 1j * Q)
+
+    freq = []
+    amp = []
+
+    for i in range(len(Q) - 1):
+        # Finding closest conjugate pair (comparison should be zero: z + z* = 2*Re(z))
+        comparisons = np.abs((phasors[i] + phasors) - (2 * np.real(phasors[i])))
+        # The frequency should at least be of opposite sign!
+        comparisons[Q * Q[i] > 0] = np.inf
+        # Make comparison relative with respect to the phasor under inspection
+        comparisons = comparisons / np.abs(phasors[i])
+        # --
+        pair_idx = np.argmin(comparisons)
+        pair_A = np.array([A[i], A[pair_idx]])
+        pair_Q = np.array([Q[i], Q[pair_idx]])
+        # --
+
+        # Check if the pair is a complex conjugate, otherwise both freqs
+        # will make it out of the loop
+        if comparisons[pair_idx] > rel_conjugate_tol:
+            freq.append(Q[i])
+            amp.append(A[i])
+            continue
+
+        # Creating avg amplitude and freq
+        real = np.mean(np.real(pair_A))
+        imag = np.mean(np.abs(np.imag(pair_A)))
+        sign = np.sign(np.imag(pair_A))[pair_Q >= 0]
+
+        if pair_Q[0] == pair_Q[1]:
+            # the pair is a copy of itself (DC signal case)
+            freq.append(pair_Q[0])
+            amp.append(pair_A[0])
+        else:
+            # Complex conjugate found, adding only once
+            if np.mean(np.abs(pair_Q)) not in freq:
+                if np.any(np.isnan(pair_Q)):
+                    freq.append(np.nan)
+                    amp.append(np.nan + 1j * np.nan)
+                else:
+                    freq.append(np.mean(np.abs(pair_Q)))
+                    amp.append(2 * (real + sign[0] * 1j * imag))
+
+    return np.array(amp), np.array(freq)
 
 
 def _fft_f0_estimate(z, force_len=None):
@@ -36,6 +105,7 @@ def _fft_f0_estimate(z, force_len=None):
     resolution = 1 / force_len
 
     return tune_est, resolution
+
 
 
 def fundamental_frequency(z, N=None, window_order=2, window_type="hann"):
@@ -190,7 +260,7 @@ def tune(x, px=None, window_order=2, window_type="hann"):
             window_order=window_order,
             window_type=window_type,
         )
-        amps, freqs = parse_real_signal(amplitudes, frequencies)
+        amps, freqs = _parse_real_signal(amplitudes, frequencies)
         freq = freqs[0]
     return freq
 
@@ -257,7 +327,7 @@ def harmonics(
             window_order=window_order,
             window_type=window_type,
         )
-        amplitudes, frequencies = parse_real_signal(amplitudes, frequencies)
+        amplitudes, frequencies = _parse_real_signal(amplitudes, frequencies)
         amplitudes = amplitudes[:num_harmonics]
         frequencies = frequencies[:num_harmonics]
 

@@ -3,11 +3,12 @@ from .naff import (
     harmonics,
     tune,
     fundamental_frequency,
-    _fft_f0_estimate,
     multiparticle_tunes,
     multiparticle_harmonics,
 )
 from .toolbox import (
+    fundamental_dfft,
+    naff_dfft,
     find_linear_combinations,
     generate_signal,
     generate_pure_KAM,
