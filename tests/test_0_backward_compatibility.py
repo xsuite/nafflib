@@ -1,5 +1,7 @@
 import numpy as np
+from nafflib.naff import _fft_f0_estimate
 import nafflib
+
 
 
 # -----
@@ -18,7 +20,7 @@ def test_isinstance():
         z = x - 1j * px
 
         # Testing _fft_f0_estimate
-        output = nafflib._fft_f0_estimate(z)
+        output = _fft_f0_estimate(z)
         assert isinstance(output, tuple), "_fft_f0_estimate output is not a tuple"
         assert all(
             isinstance(item, float) for item in output

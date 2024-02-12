@@ -1,4 +1,5 @@
 import numpy as np
+from nafflib.naff import _fft_f0_estimate
 import nafflib
 
 
@@ -38,7 +39,7 @@ def test_newton_method():
                 # Pretty much the script from fundamental_frequency, but here we vary the order and N_max
                 # =======================================
                 # Estimation of the main frequency with an FFT
-                f0_est, resolution = nafflib._fft_f0_estimate(z_w)
+                f0_est, resolution = _fft_f0_estimate(z_w)
 
                 # Preparing the estimate for the Newton refinement method
                 if f0_est >= 0.5:

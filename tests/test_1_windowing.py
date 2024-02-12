@@ -1,4 +1,5 @@
 import numpy as np
+from nafflib.naff import _fft_f0_estimate
 import nafflib
 
 
@@ -27,7 +28,7 @@ def test_hann():
         for order in [1, 2, 3, 4, 5]:
             for N_max in [1467, 2311, 5012, 10056, 26432]:
                 z_w = z[:N_max] * window_fun(N[:N_max], order=order)
-                f0_est, resolution = nafflib._fft_f0_estimate(z_w)
+                f0_est, resolution = _fft_f0_estimate(z_w)
                 # print(f'{np.abs(Q_tune-f0_est):.5e}')
                 assert np.isclose(
                     Q_tune, f0_est, atol=1e-3, rtol=0

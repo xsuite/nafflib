@@ -1,4 +1,7 @@
 import numpy as np
+from .optimize import laskar_dfft
+from .windowing import hann
+from .naff import fundamental_frequency
 
 
 # ---------------------------------------
@@ -86,74 +89,56 @@ def henon_map_4D(x, px, y, py, Qx, Qy, coupling, num_turns):
 # ---------------------------------------
 
 
+
+
 # ---------------------------------------
-def parse_real_signal(amplitudes, frequencies, rel_conjugate_tol=1e-2):
-    """
-    Parses a real signal from its complex representation, identifying and handling complex conjugates.
+# from .naff import fundamental_frequency
+def fundamental_dfft(nu,z, N=None, window_order=2, window_type="hann"):
 
-    Parameters
-    ----------
-    amplitudes : ndarray
-        Amplitudes of the complex signal.
-    frequencies : ndarray
-        Frequencies of the complex signal.
-    rel_conjugate_tol : float, optional
-        Relative tolerance for identifying complex conjugates: remainder/norm. Default is 1e-2.
+    # Initialisation
+    # ---------------------
+    if N is None:
+        N = np.arange(len(z))
+    # ---------------------
 
-    Returns
-    -------
-    amplitudes,frequencies : DataFrame or tuple of ndarray
-        Amplitudes and frequencies of the real signal components, either as a DataFrame or as two arrays.
-    """
+    # Windowing of the signal
+    # ---------------------
+    window_fun = {"hann": hann}[window_type.lower()]
+    z_w = z * window_fun(N, order=window_order)
+    # ---------------------
 
-    A, Q = amplitudes, frequencies
-    phasors = A * np.exp(2 * np.pi * 1j * Q)
-
-    freq = []
-    amp = []
-
-    for i in range(len(Q) - 1):
-        # Finding closest conjugate pair (comparison should be zero: z + z* = 2*Re(z))
-        comparisons = np.abs((phasors[i] + phasors) - (2 * np.real(phasors[i])))
-        # The frequency should at least be of opposite sign!
-        comparisons[Q * Q[i] > 0] = np.inf
-        # Make comparison relative with respect to the phasor under inspection
-        comparisons = comparisons / np.abs(phasors[i])
-        # --
-        pair_idx = np.argmin(comparisons)
-        pair_A = np.array([A[i], A[pair_idx]])
-        pair_Q = np.array([Q[i], Q[pair_idx]])
-        # --
-
-        # Check if the pair is a complex conjugate, otherwise both freqs
-        # will make it out of the loop
-        if comparisons[pair_idx] > rel_conjugate_tol:
-            freq.append(Q[i])
-            amp.append(A[i])
-            continue
-
-        # Creating avg amplitude and freq
-        real = np.mean(np.real(pair_A))
-        imag = np.mean(np.abs(np.imag(pair_A)))
-        sign = np.sign(np.imag(pair_A))[pair_Q >= 0]
-
-        if pair_Q[0] == pair_Q[1]:
-            # the pair is a copy of itself (DC signal case)
-            freq.append(pair_Q[0])
-            amp.append(pair_A[0])
-        else:
-            # Complex conjugate found, adding only once
-            if np.mean(np.abs(pair_Q)) not in freq:
-                if np.any(np.isnan(pair_Q)):
-                    freq.append(np.nan)
-                    amp.append(np.nan + 1j * np.nan)
-                else:
-                    freq.append(np.mean(np.abs(pair_Q)))
-                    amp.append(2 * (real + sign[0] * 1j * imag))
-
-    return np.array(amp), np.array(freq)
+    dfft = np.array([laskar_dfft(_f, N, z_w)[0] for _f in nu])
+    return dfft
 
 
+def naff_dfft(nu, z, num_harmonics=1, window_order=2, window_type="hann"):
+
+    assert num_harmonics >= 1, "number_of_harmonics needs to be >= 1"
+
+    # initialisation, creating a copy of the signal since we'll modify it
+    # ---------------------
+    N = np.arange(len(z))
+    _z = z.copy()
+    # ---------------------
+
+    A_dfft = []
+    for _ in range(num_harmonics):
+
+        # Computing frequency and amplitude
+        amp, freq = fundamental_frequency(_z, N=N, window_order=window_order, window_type=window_type)
+
+        # Computing cfft
+        dfft = fundamental_dfft(nu,_z, N=N, window_order=window_order, window_type=window_type
+        )
+
+        # Saving results
+        A_dfft.append(dfft)
+
+        # Substraction procedure
+        zgs = amp * np.exp(2 * np.pi * 1j * freq * N)
+        _z -= zgs
+
+    return A_dfft
 # ---------------------------------------
 
 
@@ -162,7 +147,7 @@ def find_linear_combinations(
     frequencies,
     fundamental_tunes=[],
     max_harmonic_order=10,
-    r_vec=None,
+    n_vec=None,
     to_pandas=False,
 ):
     """
@@ -176,7 +161,7 @@ def find_linear_combinations(
         List of fundamental tunes for resonance analysis. Length can be 1, 2, or 3.
     max_harmonic_order : int, optional
         Maximum order of harmonics to consider.
-    r_vec : list of ndarrays, optional
+    n_vec : list of ndarrays, optional
         List of arrays representing the possible combinations of the fundamental tunes. If not provided, it is generated. (for big arrays, it is better to provide it to avoid memory issues when looping)
     to_pandas : bool, optional
         If True, returns a pandas DataFrame; otherwise, returns lists and an array.
@@ -193,31 +178,31 @@ def find_linear_combinations(
         3,
     ], "need 1, 2 or 3 fundamental tunes (2D,4D,6D)"
 
-    # Create a 3D array of all possible combinations of r_vec
+    # Create a 3D array of all possible combinations of n_vec
     idx = max_harmonic_order
-    if r_vec is None:
+    if n_vec is None:
         if len(fundamental_tunes) == 1:
-            r1, r2 = np.mgrid[-idx : idx + 1, -idx : idx + 1]
-            r_vec = [r1, r2]
+            n1, n2 = np.mgrid[-idx : idx + 1, -idx : idx + 1]
+            n_vec = [n1, n2]
         elif len(fundamental_tunes) == 2:
-            r1, r2, r3 = np.mgrid[-idx : idx + 1, -idx : idx + 1, -idx : idx + 1]
-            r_vec = [r1, r2, r3]
+            n1, n2, n3 = np.mgrid[-idx : idx + 1, -idx : idx + 1, -idx : idx + 1]
+            n_vec = [n1, n2, n3]
         else:
-            r1, r2, r3, r4 = np.mgrid[
+            n1, n2, n3, n4 = np.mgrid[
                 -idx : idx + 1, -idx : idx + 1, -idx : idx + 1, -idx : idx + 1
             ]
-            r_vec = [r1, r2, r3, r4]
+            n_vec = [n1, n2, n3, n4]
     else:
         assert (
-            len(r_vec) == len(fundamental_tunes) + 1
-        ), "r_vec must be of length fundamental_tunes+1"
+            len(n_vec) == len(fundamental_tunes) + 1
+        ), "n_vec must be of length fundamental_tunes+1"
 
-    # Computing all linear combinations of r1*Qx + r2*Qy + r3*Qz + m
+    # Computing all linear combinations of n1*Qx + n2*Qy + n3*Qz + n4
     Q_vec = fundamental_tunes + [1]
-    all_combinations = sum([_r * _Q for _r, _Q in zip(r_vec, Q_vec)])
+    all_combinations = sum([_n * _Q for _n, _Q in zip(n_vec, Q_vec)])
 
     # Find the closest combination for each frequency
-    r_values = []
+    n_values = []
     f_values = []
     err = []
     for freq in frequencies:
@@ -227,20 +212,20 @@ def find_linear_combinations(
             np.argmin(np.abs(freq - all_combinations)), all_combinations.shape
         )
 
-        # Get the corresponding values for r1,r2,r3,r4
-        closest_combination = tuple(_r[closest_idx] for _r in r_vec)
+        # Get the corresponding values for n1,n2,n3,n4
+        closest_combination = tuple(_n[closest_idx] for _n in n_vec)
         closest_value = all_combinations[closest_idx]
 
-        r_values.append(closest_combination)
+        n_values.append(closest_combination)
         f_values.append(closest_value)
         err.append(np.abs(closest_value - freq))
 
     if to_pandas:
         import pandas as pd
 
-        return pd.DataFrame({"resonance": r_values, "err": err, "frequency": f_values})
+        return pd.DataFrame({"resonance": n_values, "err": err, "frequency": f_values})
     else:
-        return [tuple(_r) for _r in r_values], np.array(err), np.array(f_values)
+        return [tuple(_n) for _n in n_values], np.array(err), np.array(f_values)
 
 
 # ---------------------------------------
@@ -327,11 +312,11 @@ def generate_pure_KAM(
 
     # Computing the frequencies
     Q_vec = fundamental_tunes + [1]
-    r_vec = combinations
+    n_vec = combinations
     assert (
-        len(Q_vec) == np.shape(r_vec)[1]
+        len(Q_vec) == np.shape(n_vec)[1]
     ), "combinations should have n+1 indices if n fundamental tunes are provided"
-    frequencies = [np.dot(_r, Q_vec) for _r in r_vec]
+    frequencies = [np.dot(_r, Q_vec) for _r in n_vec]
 
     # Generating the signal
     signal = sum(
