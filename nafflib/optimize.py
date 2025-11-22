@@ -3,7 +3,7 @@ import numba
 
 
 @numba.jit(nopython=True)
-def raise2powerArray(a, b):
+def expArray(omega, Nmax):
     """
     Raises a complex number 'a' to a series of powers up to 'b'.
 
@@ -23,9 +23,9 @@ def raise2powerArray(a, b):
         An array of complex numbers, each element being 'a' raised to increasing powers.
 
     """
-    out = np.zeros(b) + 1j * np.zeros(b)
+    out = np.zeros(Nmax) + 1j * np.zeros(Nmax)
     out[0] = 1
-    out[1] = a
+    out[1] = np.exp(omega)
     for i in range(1, len(out)):
         out[i] = out[i - 1] * out[1]
     return out
@@ -57,8 +57,8 @@ def laskar_dfft(freq, N, z):
     Nt = len(z)
 
     # Argument of the summation
-    # raise2power is used to save computation time, eq. to np.exp(-2*np.pi*1j*freq*N)
-    to_sum = 1 / Nt * raise2powerArray(np.exp(-2 * np.pi * 1j * freq), len(N)) * z
+    # expArray is used to save computation time, eq. to np.exp(-2*np.pi*1j*freq*N)
+    to_sum = 1 / Nt * expArray(-2 * np.pi * 1j * freq, len(N)) * z
 
     # Derivative factor
     deriv_factor = 1j * N
@@ -68,6 +68,17 @@ def laskar_dfft(freq, N, z):
     _dfft_derivative = np.sum(deriv_factor * to_sum)
     return _dfft, _dfft_derivative
 
+
+def point_dfft(freq, z):
+    """
+    """
+    Nt = len(z)
+
+    # Argument of the summation
+    # expArray is used to save computation time, eq. to np.exp(-2*np.pi*1j*freq*N)
+    to_sum = 1 / Nt * expArray(-2 * np.pi * 1j * freq, Nt) * z
+    _dfft = np.sum(to_sum)
+    return _dfft
 
 def newton_method(
     z,
@@ -80,8 +91,6 @@ def newton_method(
 ):
     """
     From A. Bazzani, R. Bartolini & F. Schmidt (SUSSIX)
-
-    Applies Newton's method to find a frequency in a signal where the derivative of its DFT is zero.
 
     This function iteratively refines the frequency estimate of a signal 'z' to locate
     frequencies where the DFT's derivative is zero.
@@ -109,6 +118,8 @@ def newton_method(
         A tuple containing the amplitude at the found frequency and the frequency itself.
     """
 
+    # Shifting frequency estimate:
+    freq_estimate = freq_estimate - resolution
     # Increase resolution by factor 5
     resolution = resolution / 5
     # ---------------------------------------
@@ -163,10 +174,34 @@ def newton_method(
         root1, droot1 = root2, droot2
 
     if len(amp_found) == 0:
-        # No frequency found! (For accelerator physics, should never happen outside of chaotic layers)
+        # No frequency found!
         return np.nan + 1j * np.nan, np.nan
     else:
         idx_max = np.argmax(amp_found)
         frequency = freq_found[idx_max]
         amplitude, _ = laskar_dfft(frequency, N, z)
         return amplitude, frequency
+
+
+
+# JACOBSEN: 
+# - Comes from Harpy
+# - Was tested but only works with non-windowed signals (see paper below)
+# - Extended version from https://personalpages.surrey.ac.uk/w.wang/papers/MurakamiW_ICASSP_2020.pdf tested but didn't work well
+
+# def jacobsen_method(z, N,freq_estimate,resolution):
+
+#     force_len = int(np.round(1/resolution))
+    
+#     _N  = np.arange(force_len)
+#     k,_   = laskar_dfft(freq_estimate, _N , z[:force_len])
+#     km,_  = laskar_dfft(freq_estimate - resolution, _N , z[:force_len])
+#     kp,_  = laskar_dfft(freq_estimate + resolution, _N , z[:force_len])
+
+#     t1 = np.tan(np.pi / force_len) 
+#     delta = force_len/np.pi * np.arctan(t1* np.real((km - kp) / (2 * k - km - kp)))
+
+#     frequency       = freq_estimate + delta/force_len
+#     amplitude, _    = laskar_dfft(frequency, N, z)
+#     return amplitude, frequency
+

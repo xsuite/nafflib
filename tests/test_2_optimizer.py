@@ -44,7 +44,6 @@ def test_newton_method():
                 # Preparing the estimate for the Newton refinement method
                 if f0_est >= 0.5:
                     f0_est = -(1.0 - f0_est)
-                f0_est = f0_est - resolution
 
                 # Refinement of the tune calulation
                 amplitude, f0 = nafflib.optimize.newton_method(

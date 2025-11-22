@@ -1,5 +1,7 @@
 import numpy as np
+
 import nafflib
+from nafflib.indexing import linear_combinations
 
 
 def cauchy(x, loc, scale):
@@ -82,10 +84,9 @@ def test_dense_spectrum():
 
         # Sorting lines and compiling errors
         # -----------------------------------
-        r, _, _ = nafflib.find_linear_combinations(Q, fundamental_tunes=Q_vec)
-        r_found, _, _ = nafflib.find_linear_combinations(
-            Q_found, fundamental_tunes=Q_vec
-        )
+        
+        r = linear_combinations(Q,Qvec=Q_vec,max_n=10,max_alias=2)
+        r_found = linear_combinations(Q_found,Qvec=Q_vec,max_n=10,max_alias=2)
 
         errors_Q = []
         errors_A = []

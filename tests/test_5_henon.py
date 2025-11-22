@@ -1,6 +1,7 @@
 import numpy as np
-import nafflib
 
+import nafflib
+from nafflib.indexing import linear_combinations
 
 # ========================
 # -----
@@ -35,9 +36,7 @@ def test_map():
             )
 
             # Finding linear combinations (high order for this 1D system!)
-            r, err_r, _ = nafflib.find_linear_combinations(
-                Q, fundamental_tunes=[Q[0]], max_harmonic_order=30
-            )
+            r, err_r, _ = linear_combinations(Q,Qvec=[Q[0]],max_n=30,max_alias=10,return_errors=True)
 
             # Reconstructing signal and comparing
             x_r, px_r = nafflib.generate_signal(A, Q, N)

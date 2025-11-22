@@ -1,7 +1,9 @@
 import numpy as np
-from .optimize import laskar_dfft
+
+from .optimize import point_dfft,expArray
 from .windowing import hann
-from .naff import fundamental_frequency
+from .naff import fundamental_frequency, N_ARANGE
+
 
 
 # ---------------------------------------
@@ -92,143 +94,47 @@ def henon_map_4D(x, px, y, py, Qx, Qy, coupling, num_turns):
 
 
 # ---------------------------------------
-# from .naff import fundamental_frequency
-def fundamental_dfft(nu,z, N=None, window_order=2, window_type="hann"):
-
-    # Initialisation
-    # ---------------------
-    if N is None:
-        N = np.arange(len(z))
-    # ---------------------
-
-    # Windowing of the signal
-    # ---------------------
-    window_fun = {"hann": hann}[window_type.lower()]
-    z_w = z * window_fun(N, order=window_order)
-    # ---------------------
-
-    dfft = np.array([laskar_dfft(_f, N, z_w)[0] for _f in nu])
-    return dfft
+def dfft(nu,z):
+    return np.array([point_dfft(_f, z) for _f in nu])
+#----------------------------------------
 
 
-def naff_dfft(nu, z, num_harmonics=1, window_order=2, window_type="hann"):
+def naff_dfft(nu, z, N=None, num_harmonics=1, window_order=2, window_type="hann"):
 
     assert num_harmonics >= 1, "number_of_harmonics needs to be >= 1"
 
     # initialisation, creating a copy of the signal since we'll modify it
     # ---------------------
-    N = np.arange(len(z))
+    N  = N_ARANGE(len(z))
     _z = z.copy()
     # ---------------------
+
+    # Computing the window function
+    # ---------------------
+    window_fun = {"hann": hann}[window_type.lower()]
+    w_of_N = window_fun(N, order=window_order)
+    # ---------------------
+
 
     A_dfft = []
     for _ in range(num_harmonics):
 
         # Computing frequency and amplitude
-        amp, freq = fundamental_frequency(_z, N=N, window_order=window_order, window_type=window_type)
+        amp, freq = fundamental_frequency(_z*w_of_N)
 
         # Computing cfft
-        dfft = fundamental_dfft(nu,_z, N=N, window_order=window_order, window_type=window_type
-        )
+        _dfft = dfft(nu,_z*w_of_N)
 
         # Saving results
-        A_dfft.append(dfft)
+        A_dfft.append(_dfft)
 
         # Substraction procedure
-        zgs = amp * np.exp(2 * np.pi * 1j * freq * N)
+        zgs = amp * expArray(2 * np.pi * 1j * freq, len(N))
         _z -= zgs
 
     return A_dfft
 # ---------------------------------------
 
-
-# ---------------------------------------
-def find_linear_combinations(
-    frequencies,
-    fundamental_tunes=[],
-    max_harmonic_order=10,
-    n_vec=None,
-    to_pandas=False,
-):
-    """
-    Identifies linear combinations of fundamental tunes that closely match the given frequencies.
-
-    Parameters
-    ----------
-    frequencies : ndarray
-        Array of frequencies to analyze.
-    fundamental_tunes : list, optional
-        List of fundamental tunes for resonance analysis. Length can be 1, 2, or 3.
-    max_harmonic_order : int, optional
-        Maximum order of harmonics to consider.
-    n_vec : list of ndarrays, optional
-        List of arrays representing the possible combinations of the fundamental tunes. If not provided, it is generated. (for big arrays, it is better to provide it to avoid memory issues when looping)
-    to_pandas : bool, optional
-        If True, returns a pandas DataFrame; otherwise, returns lists and an array.
-
-    Returns
-    -------
-    r_values,error,f_values : DataFrame or tuple
-        Resonance values, errors, and corresponding frequencies, either as a DataFrame or separate data structures.
-    """
-    fundamental_tunes = list(fundamental_tunes)
-    assert len(fundamental_tunes) in [
-        1,
-        2,
-        3,
-    ], "need 1, 2 or 3 fundamental tunes (2D,4D,6D)"
-
-    # Create a 3D array of all possible combinations of n_vec
-    idx = max_harmonic_order
-    if n_vec is None:
-        if len(fundamental_tunes) == 1:
-            n1, n2 = np.mgrid[-idx : idx + 1, -idx : idx + 1]
-            n_vec = [n1, n2]
-        elif len(fundamental_tunes) == 2:
-            n1, n2, n3 = np.mgrid[-idx : idx + 1, -idx : idx + 1, -idx : idx + 1]
-            n_vec = [n1, n2, n3]
-        else:
-            n1, n2, n3, n4 = np.mgrid[
-                -idx : idx + 1, -idx : idx + 1, -idx : idx + 1, -idx : idx + 1
-            ]
-            n_vec = [n1, n2, n3, n4]
-    else:
-        assert (
-            len(n_vec) == len(fundamental_tunes) + 1
-        ), "n_vec must be of length fundamental_tunes+1"
-
-    # Computing all linear combinations of n1*Qx + n2*Qy + n3*Qz + n4
-    Q_vec = fundamental_tunes + [1]
-    all_combinations = sum([_n * _Q for _n, _Q in zip(n_vec, Q_vec)])
-
-    # Find the closest combination for each frequency
-    n_values = []
-    f_values = []
-    err = []
-    for freq in frequencies:
-
-        # Find the index of the closest combination
-        closest_idx = np.unravel_index(
-            np.argmin(np.abs(freq - all_combinations)), all_combinations.shape
-        )
-
-        # Get the corresponding values for n1,n2,n3,n4
-        closest_combination = tuple(_n[closest_idx] for _n in n_vec)
-        closest_value = all_combinations[closest_idx]
-
-        n_values.append(closest_combination)
-        f_values.append(closest_value)
-        err.append(np.abs(closest_value - freq))
-
-    if to_pandas:
-        import pandas as pd
-
-        return pd.DataFrame({"resonance": n_values, "err": err, "frequency": f_values})
-    else:
-        return [tuple(_n) for _n in n_values], np.array(err), np.array(f_values)
-
-
-# ---------------------------------------
 
 
 # ---------------------------------------
@@ -335,3 +241,5 @@ def generate_pure_KAM(
 
 
 # ---------------------------------------
+
+

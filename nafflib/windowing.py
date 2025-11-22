@@ -44,4 +44,5 @@ def hann(N, order=1):
         * math.factorial(p) ** 2
         / (math.factorial(2 * p))
         * (1 + np.cos(2 * np.pi * (N - center) / Nt)) ** (p)
+        # *(1 - np.cos(2*np.pi*N/Nt))**p # Should be equivalent and simpler: To be confirmed
     )

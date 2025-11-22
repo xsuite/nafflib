@@ -7,15 +7,15 @@ from .naff import (
     multiparticle_harmonics,
 )
 from .toolbox import (
-    fundamental_dfft,
+    dfft,
     naff_dfft,
-    find_linear_combinations,
     generate_signal,
     generate_pure_KAM,
     henon_map,
     henon_map_4D,
 )
 from .windowing import hann
+from .indexing import linear_combinations
 
 
 # backward compatibility

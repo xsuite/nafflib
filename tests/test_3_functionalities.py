@@ -1,6 +1,7 @@
 import numpy as np
-import nafflib
 
+import nafflib
+from nafflib.indexing import linear_combinations
 
 # -----
 # Henon map tune
@@ -29,9 +30,8 @@ def test_parse_complex():
         )
         assert len(spectrum_z[1]) == 2 * n_harm, "Too few harmonics found for z"
 
-        r_z, _, _ = nafflib.find_linear_combinations(
-            spectrum_z[1], fundamental_tunes=[spectrum_z[1][0]]
-        )
+
+        r_z = linear_combinations(spectrum_z[1],Qvec=[spectrum_z[1][0]],max_n=10,max_alias=5)
 
         # x-only lines
         spectrum_x = nafflib.harmonics(
@@ -39,9 +39,9 @@ def test_parse_complex():
         )
         assert len(spectrum_x[1]) == n_harm, "Too few harmonics found for x"
 
-        r_x, _, _ = nafflib.find_linear_combinations(
-            spectrum_x[1], fundamental_tunes=[spectrum_x[1][0]]
-        )
+
+        r_x = linear_combinations(spectrum_x[1],Qvec=[spectrum_x[1][0]],max_n=10,max_alias=5)
+        
 
         # Scanning x-lines and comparing with z-lines
         errors_Q = []
@@ -76,18 +76,16 @@ def test_x_px_handling():
             x, px, num_harmonics=2 * n_harm, window_order=2, window_type="hann"
         )
         assert len(spectrum_x_px[1]) == 2 * n_harm, "Too few harmonics found for x-px"
-        r_x_px, _, _ = nafflib.find_linear_combinations(
-            spectrum_x_px[1], fundamental_tunes=[spectrum_x_px[1][0]]
-        )
+
+        r_x_px = linear_combinations(spectrum_x_px[1],Qvec=[spectrum_x_px[1][0]],max_n=10,max_alias=5)
 
         # x-only lines
         spectrum_x = nafflib.harmonics(
             x, num_harmonics=n_harm, window_order=2, window_type="hann"
         )
         assert len(spectrum_x[1]) == n_harm, "Too few harmonics found for x"
-        r_x, _, _ = nafflib.find_linear_combinations(
-            spectrum_x[1], fundamental_tunes=[spectrum_x[1][0]]
-        )
+
+        r_x = linear_combinations(spectrum_x[1],Qvec=[spectrum_x[1][0]],max_n=10,max_alias=5)
 
         # Scanning x-lines and comparing with z-lines
         errors_Q = []
@@ -120,9 +118,11 @@ def test_signal_generation():
         )
 
         # Finding linear combinations (high order for this 1D system!)
-        r, _, _ = nafflib.find_linear_combinations(
-            Q, fundamental_tunes=[Q[0]], max_harmonic_order=30
-        )
+        # r, _, _ = nafflib.find_linear_combinations(
+        #     Q, fundamental_tunes=[Q[0]], max_harmonic_order=30
+        # )
+        r = linear_combinations(Q,Qvec=[Q[0]],max_n=30,max_alias=5)
+        
 
         # Reconstructing signal 2 ways
         x_r, px_r = nafflib.generate_signal(A, Q, N)
@@ -181,13 +181,12 @@ def test_linear_combinations():
         )
 
         np.random.seed(0)
-        tol = 1e-10
+        tol = 1e-12
         frequencies *= 1 + np.random.uniform(tol, tol * 10, n_harm)
 
         # Looking for linear combinations
-        r_found, err, _ = nafflib.find_linear_combinations(
-            frequencies, fundamental_tunes=[Q0, Q1], max_harmonic_order=10
-        )
+
+        r_found,err,_ = linear_combinations(frequencies,Qvec=[Q0, Q1],max_n=10,max_alias=5,return_errors=True)
 
         assert np.all(
             np.array(r) == np.array(r_found)
@@ -248,3 +247,36 @@ def test_real_signal_tune():
             assert np.allclose(
                 np.abs(Q_vec), np.abs(Q_vec_z), atol=1e-5, rtol=0
             ), f"Tune difference too large between x-only and x-px @ {label} and window_order={w_order}"
+
+
+
+
+
+# -----
+# Henon map tune
+Q_h = 0.2064898024701758
+# -----
+example_signals_mp = []
+for x_start in np.linspace(0.1,0.3,100):
+    example_signals_mp.append(nafflib.henon_map(x_start, 0.35 * x_start, Q_h, int(1e4)))
+
+
+
+def test_multiprocessing():
+    # Testing multiparticle_tunes
+    multiparticles = [signal[0] - 1j * signal[1] for signal in example_signals_mp]
+
+    output_mp_off = nafflib.multiparticle_tunes(multiparticles,processes = None)
+    output_mp_on = nafflib.multiparticle_tunes(multiparticles,processes = 2)
+
+
+    assert np.all(output_mp_off==output_mp_on), 'multiprocesses introduced errors in multiparticle_tunes!'
+
+
+    output_mp_off = nafflib.multiparticle_harmonics(multiparticles,num_harmonics = 30,processes = None)
+    output_mp_on = nafflib.multiparticle_harmonics(multiparticles,num_harmonics = 30,processes = 2)
+
+
+    assert np.all(output_mp_off[0]==output_mp_on[0]), 'multiprocesses introduced errors in multiparticle_harmonics!'
+    assert np.all(output_mp_off[1]==output_mp_on[1]), 'multiprocesses introduced errors in multiparticle_harmonics!'
+

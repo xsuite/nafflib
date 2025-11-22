@@ -4,7 +4,7 @@
 
 A Python implementation of the Numerical Analysis of Fundamental Frequencies algorithm (NAFF [1-2]) from **J. Laskar**. This implementation uses a tailor-made optimizer (`nafflib.optimise.newton_method`, from **A. Bazzani, R. Bartolini & F. Schmidt**) to find the frequencies up to machine precision for tracking data. A Hann window is used to help with the convergence (`nafflib.windowing.hann`).
 
-An insightful description of the NAFF algorithm is provided in the textbook by A. Wolski [3].
+An in-depth description of the NAFF algorithm is provided in P. Belanger's Ph.D. thesis. Additionnal references are given below.
 
 [1] J. Laskar, Introduction to Frequency Map Analysis. http://link.springer.com/10.1007/978-94-011-4673-9_13  
 [2] J. Laskar et al., The Measure of Chaos by the Numerical Analysis of the Fundamental Frequencies. Application to the Standard Mapping. https://doi.org/10.1016/0167-2789(92)90028-L   
@@ -47,25 +47,21 @@ z = x - 1j * px
 
 # The two following calls are equivalent
 # --------------------------------------------------
-spectrum = nafflib.harmonics(z, num_harmonics=5, window_order=2, window_type="hann")
-spectrum = nafflib.harmonics(x, px, num_harmonics=5, window_order=2, window_type="hann")
-# -> where spectrum = (amplitudes,frequencies)
+amplitudes,frequencies = nafflib.harmonics(z, num_harmonics=5, window_order=2, window_type="hann")
+amplitudes,frequencies = nafflib.harmonics(x, px, num_harmonics=5, window_order=2, window_type="hann")
 # --------------------------------------------------
 
 # From position only:
 # --------------------------------------------------
-spectrum = nafflib.harmonics(x, num_harmonics=5, window_order=2, window_type="hann")
-# -> where spectrum = (amplitudes,frequencies)
+amplitudes,frequencies = nafflib.harmonics(x, num_harmonics=5, window_order=2, window_type="hann")
 # --------------------------------------------------
 ``` 
 
 ### Categorization of harmonics
 
-For stable motion sufficiently close to integrable invariants of a conservative system, the frequencies are expected to come as a linear combinations of the fundamental tunes (3 for a 6D system). 
+For KAM trajectories, the harmonics are expected to come as a linear combinations of the fundamental frequencies (3 for a 6D system). 
 
-To properly study the harmonics of a system, the user should almost always try to unambigously identify the spectral lines, since very close lines can be mistaken for one another and **ordering them by amplitude will definitely lead to the wrong results**. 
-
-Such a categorization of the spectral lines can be done for stable motion from a hamiltonian system like the LHC or any standard map by using the linear combination of fundamental frequencies as a unique ID to follow a given spectral line. See for example the `examples/nb_convergence.ipynb` notebook for such an approach and the `examples/ex_04_regularity_4D.py` for an example of the problems which can arise when ordering spectral lines by amplitude.
+To properly study the harmonics of a system, it is helpful to retreive these linear combinations as done below: 
 
 
 ```python
@@ -78,18 +74,19 @@ Q_vec = [
 ]
 
 # Let's extract some harmonics
-A, Q = nafflib.harmonics(x, px, num_harmonics=5)
+Ax, Qx = nafflib.harmonics(x, px, num_harmonics=5)
 
-# Let's find the linear combination of fundamental tunes (Q_vec)
-# -----------------
-# Note: max_harmonics_order might need to be set to a higher value to find
-#       the proper linear combination of frequencies
-# -----------------
-categorization = nafflib.find_linear_combinations(
-    Q, fundamental_tunes=Q_vec, max_harmonic_order=10
-)
-# -> where categorization = (r_vec,err,combined_frequency)
-
+# Indexing harmonics
+#============================================================================
+max_n       = 90  #(high numbers needed in 2D..)
+max_alias   = 50
+warning_tol = np.inf #Disable warnings
+#-------------------------------------
+nx      = nafflib.linear_combinations(Qx,   Qvec    = Qvec,
+                                            max_n   = max_n,
+                                            max_alias   = max_alias, 
+                                            warning_tol = warning_tol)
+#============================================================================
 ```
 
 
